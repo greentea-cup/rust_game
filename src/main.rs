@@ -3,7 +3,7 @@ mod ext;
 mod logger;
 
 use std::{
-    collections::HashMap,
+    // collections::HashMap,
     fs::{create_dir_all, read_to_string},
     mem::size_of,
     path::Path,
@@ -185,7 +185,7 @@ unsafe fn run() {
     //     1.0, 1.0, 1.0, // top right
     // ];
 
-    let verticies = faces.flatten();
+    let verticies = faces
 
     let buffer = gl.create_buffer().expect("Cannot create buffer");
     gl.bind_buffer(glow::ARRAY_BUFFER, Some(buffer));
