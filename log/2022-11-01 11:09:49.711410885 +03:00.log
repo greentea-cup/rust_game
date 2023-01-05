@@ -1,0 +1,4 @@
+DEBUG [2022-11-01][11:09:54] game src/main.rs:169:21 KeyDown:
+DEBUG [2022-11-01][11:09:54] game src/main.rs:171:37 Keycode Left Alt, 1073742050
+DEBUG [2022-11-01][11:09:54] game src/main.rs:175:37 Scancde Left Alt, 226
+DEBUG [2022-11-01][11:09:54] game src/main.rs:178:21 Keymod: 0100

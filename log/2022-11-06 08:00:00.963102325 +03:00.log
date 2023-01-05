@@ -1,0 +1,52 @@
+ERROR [2022-11-06][08:00:01] game src/main.rs:65:17 Cannot vertex create shader: 0:4(16): error: syntax error, unexpected ';', expecting '{'
+
+ERROR [2022-11-06][08:00:01] game src/main.rs:88:9 Cannot link program: error: linking with uncompiled/unspecialized shader
+DEBUG [2022-11-06][08:00:01] game src/main.rs:140:32 Window: Shown
+DEBUG [2022-11-06][08:00:01] game src/main.rs:140:32 Window: Moved(256, 172)
+DEBUG [2022-11-06][08:00:01] game src/main.rs:140:32 Window: Exposed
+DEBUG [2022-11-06][08:00:01] game src/main.rs:140:32 Window: Enter
+DEBUG [2022-11-06][08:00:02] game src/main.rs:140:32 Window: Leave
+DEBUG [2022-11-06][08:00:04] game src/main.rs:140:32 Window: Enter
+DEBUG [2022-11-06][08:00:05] game src/main.rs:140:32 Window: FocusGained
+DEBUG [2022-11-06][08:00:05] game src/main.rs:140:32 Window: TakeFocus
+DEBUG [2022-11-06][08:00:05] game src/main.rs:140:32 Window: Leave
+DEBUG [2022-11-06][08:00:05] game src/main.rs:140:32 Window: TakeFocus
+DEBUG [2022-11-06][08:00:05] game src/main.rs:140:32 Window: TakeFocus
+DEBUG [2022-11-06][08:00:05] game src/main.rs:140:32 Window: Moved(250, 168)
+DEBUG [2022-11-06][08:00:05] game src/main.rs:140:32 Window: Moved(224, 156)
+DEBUG [2022-11-06][08:00:05] game src/main.rs:140:32 Window: Moved(189, 142)
+DEBUG [2022-11-06][08:00:05] game src/main.rs:140:32 Window: Moved(157, 127)
+DEBUG [2022-11-06][08:00:05] game src/main.rs:140:32 Window: Moved(130, 111)
+DEBUG [2022-11-06][08:00:05] game src/main.rs:140:32 Window: Moved(109, 98)
+DEBUG [2022-11-06][08:00:05] game src/main.rs:140:32 Window: Moved(105, 94)
+DEBUG [2022-11-06][08:00:06] game src/main.rs:140:32 Window: Moved(100, 89)
+DEBUG [2022-11-06][08:00:06] game src/main.rs:140:32 Window: Moved(97, 86)
+DEBUG [2022-11-06][08:00:06] game src/main.rs:140:32 Window: Moved(96, 85)
+DEBUG [2022-11-06][08:00:06] game src/main.rs:140:32 Window: Moved(94, 83)
+DEBUG [2022-11-06][08:00:06] game src/main.rs:140:32 Window: Moved(93, 79)
+DEBUG [2022-11-06][08:00:06] game src/main.rs:140:32 Window: Moved(92, 75)
+DEBUG [2022-11-06][08:00:06] game src/main.rs:140:32 Window: Moved(92, 71)
+DEBUG [2022-11-06][08:00:06] game src/main.rs:140:32 Window: Moved(90, 66)
+DEBUG [2022-11-06][08:00:06] game src/main.rs:140:32 Window: Moved(90, 60)
+DEBUG [2022-11-06][08:00:06] game src/main.rs:140:32 Window: Moved(90, 54)
+DEBUG [2022-11-06][08:00:06] game src/main.rs:140:32 Window: Moved(90, 52)
+DEBUG [2022-11-06][08:00:06] game src/main.rs:140:32 Window: Moved(91, 50)
+DEBUG [2022-11-06][08:00:06] game src/main.rs:140:32 Window: Moved(91, 48)
+DEBUG [2022-11-06][08:00:06] game src/main.rs:140:32 Window: Moved(92, 43)
+DEBUG [2022-11-06][08:00:06] game src/main.rs:140:32 Window: Moved(92, 40)
+DEBUG [2022-11-06][08:00:06] game src/main.rs:140:32 Window: Moved(93, 35)
+DEBUG [2022-11-06][08:00:06] game src/main.rs:140:32 Window: Moved(95, 31)
+DEBUG [2022-11-06][08:00:06] game src/main.rs:140:32 Window: Moved(95, 28)
+DEBUG [2022-11-06][08:00:06] game src/main.rs:140:32 Window: Moved(96, 28)
+DEBUG [2022-11-06][08:00:06] game src/main.rs:140:32 Window: Moved(97, 28)
+DEBUG [2022-11-06][08:00:06] game src/main.rs:140:32 Window: Moved(104, 28)
+DEBUG [2022-11-06][08:00:06] game src/main.rs:140:32 Window: Moved(120, 28)
+DEBUG [2022-11-06][08:00:06] game src/main.rs:140:32 Window: Moved(152, 28)
+DEBUG [2022-11-06][08:00:06] game src/main.rs:140:32 Window: Moved(194, 52)
+DEBUG [2022-11-06][08:00:06] game src/main.rs:140:32 Window: Moved(236, 62)
+DEBUG [2022-11-06][08:00:06] game src/main.rs:140:32 Window: Moved(263, 71)
+DEBUG [2022-11-06][08:00:06] game src/main.rs:140:32 Window: Moved(278, 75)
+DEBUG [2022-11-06][08:00:06] game src/main.rs:140:32 Window: Moved(282, 76)
+DEBUG [2022-11-06][08:00:07] game src/main.rs:140:32 Window: Enter
+DEBUG [2022-11-06][08:00:07] game src/main.rs:140:32 Window: Leave
+DEBUG [2022-11-06][08:00:07] game src/main.rs:140:32 Window: FocusLost

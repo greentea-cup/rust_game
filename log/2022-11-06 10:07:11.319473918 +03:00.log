@@ -1,0 +1,8 @@
+DEBUG [2022-11-06][10:07:11] game src/main.rs:158:32 Window: Shown
+DEBUG [2022-11-06][10:07:11] game src/main.rs:158:32 Window: Moved(256, 172)
+DEBUG [2022-11-06][10:07:11] game src/main.rs:158:32 Window: Exposed
+DEBUG [2022-11-06][10:07:11] game src/main.rs:158:32 Window: FocusGained
+DEBUG [2022-11-06][10:07:11] game src/main.rs:158:32 Window: TakeFocus
+DEBUG [2022-11-06][10:07:13] game src/main.rs:158:32 Window: Enter
+DEBUG [2022-11-06][10:07:14] game src/main.rs:158:32 Window: Leave
+DEBUG [2022-11-06][10:07:14] game src/main.rs:158:32 Window: Close

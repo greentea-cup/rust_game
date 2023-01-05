@@ -1,0 +1,11 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "command": "cargo build --features=glutin",
+      "name": "Run glutin",
+      "request": "launch",
+      "type": "node-terminal"
+    }
+  ]
+}

@@ -1,0 +1,6 @@
+# https://rust-lang.github.io/rustfmt/
+indent_style = "Block"
+# binop_separator = "Front" # unstable
+tab_spaces = 4
+# use_try_shorthand = true # don't want
+match_block_trailing_comma = true

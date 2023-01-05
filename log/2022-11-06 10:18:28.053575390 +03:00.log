@@ -1,0 +1,45 @@
+ERROR [2022-11-06][10:18:28] game src/main.rs:65:17 Cannot create vertex shader: 0:20(41): error: `vertCamera' undeclared
+0:20(41): error: type mismatch
+0:20(20): error: operands to arithmetic operators must be numeric
+0:22(27): warning: `vertCamera' used uninitialized
+0:22(27): error: size mismatch for matrix multiplication
+0:23(23): warning: `projectedVert_tmp' used uninitialized
+0:23(47): error: `projectedVert' undeclared
+0:23(47): error: type mismatch
+0:23(23): error: operands to arithmetic operators must be numeric
+0:24(16): warning: `projectedVert' used uninitialized
+0:24(2): error: value of type vec3 cannot be assigned to variable of type vec4
+
+ERROR [2022-11-06][10:18:28] game src/main.rs:88:9 Cannot link program: error: linking with uncompiled/unspecialized shader
+DEBUG [2022-11-06][10:18:28] game src/main.rs:158:32 Window: Shown
+DEBUG [2022-11-06][10:18:28] game src/main.rs:158:32 Window: Moved(256, 172)
+DEBUG [2022-11-06][10:18:28] game src/main.rs:158:32 Window: Exposed
+DEBUG [2022-11-06][10:18:28] game src/main.rs:158:32 Window: FocusGained
+DEBUG [2022-11-06][10:18:28] game src/main.rs:158:32 Window: TakeFocus
+DEBUG [2022-11-06][10:18:29] game src/main.rs:158:32 Window: Enter
+DEBUG [2022-11-06][10:18:30] game src/main.rs:228:21 MouseButtonDown
+DEBUG [2022-11-06][10:18:30] game src/main.rs:240:21 MouseButtonUp
+DEBUG [2022-11-06][10:18:31] game src/main.rs:187:21 KeyDown:
+DEBUG [2022-11-06][10:18:31] game src/main.rs:189:37 Keycode D, 100
+DEBUG [2022-11-06][10:18:31] game src/main.rs:193:37 Scancde D, 7
+DEBUG [2022-11-06][10:18:31] game src/main.rs:196:21 Keymod: 0000
+DEBUG [2022-11-06][10:18:31] game src/main.rs:177:21 TextInput
+DEBUG [2022-11-06][10:18:31] game src/main.rs:187:21 KeyDown:
+DEBUG [2022-11-06][10:18:31] game src/main.rs:189:37 Keycode S, 115
+DEBUG [2022-11-06][10:18:31] game src/main.rs:193:37 Scancde S, 22
+DEBUG [2022-11-06][10:18:31] game src/main.rs:196:21 Keymod: 0000
+DEBUG [2022-11-06][10:18:31] game src/main.rs:177:21 TextInput
+DEBUG [2022-11-06][10:18:31] game src/main.rs:207:21 KeyUp:
+DEBUG [2022-11-06][10:18:31] game src/main.rs:209:37 Keycode D, 100
+DEBUG [2022-11-06][10:18:31] game src/main.rs:213:37 Scancde D, 7
+DEBUG [2022-11-06][10:18:31] game src/main.rs:216:21 Keymod: 0000
+DEBUG [2022-11-06][10:18:31] game src/main.rs:207:21 KeyUp:
+DEBUG [2022-11-06][10:18:31] game src/main.rs:209:37 Keycode S, 115
+DEBUG [2022-11-06][10:18:31] game src/main.rs:213:37 Scancde S, 22
+DEBUG [2022-11-06][10:18:31] game src/main.rs:216:21 Keymod: 0000
+DEBUG [2022-11-06][10:18:31] game src/main.rs:228:21 MouseButtonDown
+DEBUG [2022-11-06][10:18:31] game src/main.rs:240:21 MouseButtonUp
+DEBUG [2022-11-06][10:18:31] game src/main.rs:228:21 MouseButtonDown
+DEBUG [2022-11-06][10:18:31] game src/main.rs:240:21 MouseButtonUp
+DEBUG [2022-11-06][10:18:32] game src/main.rs:158:32 Window: Leave
+DEBUG [2022-11-06][10:18:32] game src/main.rs:158:32 Window: Close

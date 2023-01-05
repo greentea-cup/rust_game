@@ -1,0 +1,252 @@
+INFO [2022-11-06][06:58:16] game src/main.rs:151:32 Window: Shown
+INFO [2022-11-06][06:58:16] game src/main.rs:151:32 Window: Moved(256, 172)
+INFO [2022-11-06][06:58:16] game src/main.rs:151:32 Window: Exposed
+INFO [2022-11-06][06:58:16] game src/main.rs:151:32 Window: Enter
+INFO [2022-11-06][06:58:17] game src/main.rs:151:32 Window: Leave
+INFO [2022-11-06][06:58:17] game src/main.rs:151:32 Window: FocusGained
+INFO [2022-11-06][06:58:17] game src/main.rs:151:32 Window: TakeFocus
+INFO [2022-11-06][06:58:17] game src/main.rs:151:32 Window: TakeFocus
+INFO [2022-11-06][06:58:17] game src/main.rs:151:32 Window: SizeChanged(854, 479)
+INFO [2022-11-06][06:58:17] game src/main.rs:145:29 Resizing to 854x479
+INFO [2022-11-06][06:58:17] game src/main.rs:151:32 Window: Exposed
+INFO [2022-11-06][06:58:18] game src/main.rs:151:32 Window: SizeChanged(854, 472)
+INFO [2022-11-06][06:58:18] game src/main.rs:145:29 Resizing to 854x472
+INFO [2022-11-06][06:58:18] game src/main.rs:151:32 Window: Exposed
+INFO [2022-11-06][06:58:18] game src/main.rs:151:32 Window: SizeChanged(854, 441)
+INFO [2022-11-06][06:58:18] game src/main.rs:145:29 Resizing to 854x441
+INFO [2022-11-06][06:58:18] game src/main.rs:151:32 Window: Exposed
+INFO [2022-11-06][06:58:18] game src/main.rs:151:32 Window: SizeChanged(854, 372)
+INFO [2022-11-06][06:58:18] game src/main.rs:145:29 Resizing to 854x372
+INFO [2022-11-06][06:58:18] game src/main.rs:151:32 Window: Exposed
+INFO [2022-11-06][06:58:18] game src/main.rs:151:32 Window: SizeChanged(854, 352)
+INFO [2022-11-06][06:58:18] game src/main.rs:145:29 Resizing to 854x352
+INFO [2022-11-06][06:58:18] game src/main.rs:151:32 Window: Exposed
+INFO [2022-11-06][06:58:18] game src/main.rs:151:32 Window: SizeChanged(854, 343)
+INFO [2022-11-06][06:58:18] game src/main.rs:145:29 Resizing to 854x343
+INFO [2022-11-06][06:58:18] game src/main.rs:151:32 Window: Exposed
+INFO [2022-11-06][06:58:18] game src/main.rs:151:32 Window: SizeChanged(854, 354)
+INFO [2022-11-06][06:58:18] game src/main.rs:145:29 Resizing to 854x354
+INFO [2022-11-06][06:58:18] game src/main.rs:151:32 Window: Exposed
+INFO [2022-11-06][06:58:18] game src/main.rs:151:32 Window: SizeChanged(854, 412)
+INFO [2022-11-06][06:58:18] game src/main.rs:145:29 Resizing to 854x412
+INFO [2022-11-06][06:58:18] game src/main.rs:151:32 Window: Exposed
+INFO [2022-11-06][06:58:18] game src/main.rs:151:32 Window: SizeChanged(854, 443)
+INFO [2022-11-06][06:58:18] game src/main.rs:145:29 Resizing to 854x443
+INFO [2022-11-06][06:58:18] game src/main.rs:151:32 Window: Exposed
+INFO [2022-11-06][06:58:18] game src/main.rs:151:32 Window: SizeChanged(854, 448)
+INFO [2022-11-06][06:58:18] game src/main.rs:145:29 Resizing to 854x448
+INFO [2022-11-06][06:58:18] game src/main.rs:151:32 Window: Exposed
+INFO [2022-11-06][06:58:18] game src/main.rs:151:32 Window: SizeChanged(854, 447)
+INFO [2022-11-06][06:58:18] game src/main.rs:145:29 Resizing to 854x447
+INFO [2022-11-06][06:58:18] game src/main.rs:151:32 Window: Exposed
+INFO [2022-11-06][06:58:18] game src/main.rs:151:32 Window: SizeChanged(854, 293)
+INFO [2022-11-06][06:58:18] game src/main.rs:145:29 Resizing to 854x293
+INFO [2022-11-06][06:58:18] game src/main.rs:151:32 Window: Exposed
+INFO [2022-11-06][06:58:18] game src/main.rs:151:32 Window: SizeChanged(854, 252)
+INFO [2022-11-06][06:58:18] game src/main.rs:145:29 Resizing to 854x252
+INFO [2022-11-06][06:58:18] game src/main.rs:151:32 Window: Exposed
+INFO [2022-11-06][06:58:18] game src/main.rs:151:32 Window: SizeChanged(854, 312)
+INFO [2022-11-06][06:58:18] game src/main.rs:145:29 Resizing to 854x312
+INFO [2022-11-06][06:58:18] game src/main.rs:151:32 Window: Exposed
+INFO [2022-11-06][06:58:18] game src/main.rs:151:32 Window: SizeChanged(854, 404)
+INFO [2022-11-06][06:58:18] game src/main.rs:145:29 Resizing to 854x404
+INFO [2022-11-06][06:58:18] game src/main.rs:151:32 Window: Exposed
+INFO [2022-11-06][06:58:18] game src/main.rs:151:32 Window: SizeChanged(854, 436)
+INFO [2022-11-06][06:58:18] game src/main.rs:145:29 Resizing to 854x436
+INFO [2022-11-06][06:58:18] game src/main.rs:151:32 Window: Exposed
+INFO [2022-11-06][06:58:18] game src/main.rs:151:32 Window: SizeChanged(854, 422)
+INFO [2022-11-06][06:58:18] game src/main.rs:145:29 Resizing to 854x422
+INFO [2022-11-06][06:58:18] game src/main.rs:151:32 Window: Exposed
+INFO [2022-11-06][06:58:18] game src/main.rs:151:32 Window: SizeChanged(854, 383)
+INFO [2022-11-06][06:58:18] game src/main.rs:145:29 Resizing to 854x383
+INFO [2022-11-06][06:58:18] game src/main.rs:151:32 Window: Exposed
+INFO [2022-11-06][06:58:18] game src/main.rs:151:32 Window: SizeChanged(854, 427)
+INFO [2022-11-06][06:58:18] game src/main.rs:145:29 Resizing to 854x427
+INFO [2022-11-06][06:58:18] game src/main.rs:151:32 Window: Exposed
+INFO [2022-11-06][06:58:18] game src/main.rs:151:32 Window: SizeChanged(854, 522)
+INFO [2022-11-06][06:58:18] game src/main.rs:145:29 Resizing to 854x522
+INFO [2022-11-06][06:58:18] game src/main.rs:151:32 Window: Exposed
+INFO [2022-11-06][06:58:18] game src/main.rs:151:32 Window: SizeChanged(854, 523)
+INFO [2022-11-06][06:58:18] game src/main.rs:145:29 Resizing to 854x523
+INFO [2022-11-06][06:58:18] game src/main.rs:151:32 Window: Exposed
+INFO [2022-11-06][06:58:18] game src/main.rs:151:32 Window: SizeChanged(854, 482)
+INFO [2022-11-06][06:58:18] game src/main.rs:145:29 Resizing to 854x482
+INFO [2022-11-06][06:58:18] game src/main.rs:151:32 Window: Exposed
+INFO [2022-11-06][06:58:18] game src/main.rs:151:32 Window: SizeChanged(854, 419)
+INFO [2022-11-06][06:58:18] game src/main.rs:145:29 Resizing to 854x419
+INFO [2022-11-06][06:58:18] game src/main.rs:151:32 Window: Exposed
+INFO [2022-11-06][06:58:18] game src/main.rs:151:32 Window: SizeChanged(854, 448)
+INFO [2022-11-06][06:58:18] game src/main.rs:145:29 Resizing to 854x448
+INFO [2022-11-06][06:58:18] game src/main.rs:151:32 Window: Exposed
+INFO [2022-11-06][06:58:18] game src/main.rs:151:32 Window: SizeChanged(854, 552)
+INFO [2022-11-06][06:58:18] game src/main.rs:145:29 Resizing to 854x552
+INFO [2022-11-06][06:58:18] game src/main.rs:151:32 Window: Exposed
+INFO [2022-11-06][06:58:18] game src/main.rs:151:32 Window: SizeChanged(854, 560)
+INFO [2022-11-06][06:58:18] game src/main.rs:145:29 Resizing to 854x560
+INFO [2022-11-06][06:58:18] game src/main.rs:151:32 Window: Exposed
+INFO [2022-11-06][06:58:19] game src/main.rs:151:32 Window: SizeChanged(854, 531)
+INFO [2022-11-06][06:58:19] game src/main.rs:145:29 Resizing to 854x531
+INFO [2022-11-06][06:58:19] game src/main.rs:151:32 Window: Exposed
+INFO [2022-11-06][06:58:19] game src/main.rs:151:32 Window: SizeChanged(854, 516)
+INFO [2022-11-06][06:58:19] game src/main.rs:145:29 Resizing to 854x516
+INFO [2022-11-06][06:58:19] game src/main.rs:151:32 Window: Exposed
+INFO [2022-11-06][06:58:19] game src/main.rs:151:32 Window: SizeChanged(854, 540)
+INFO [2022-11-06][06:58:19] game src/main.rs:145:29 Resizing to 854x540
+INFO [2022-11-06][06:58:19] game src/main.rs:151:32 Window: Exposed
+INFO [2022-11-06][06:58:19] game src/main.rs:151:32 Window: SizeChanged(854, 564)
+INFO [2022-11-06][06:58:19] game src/main.rs:145:29 Resizing to 854x564
+INFO [2022-11-06][06:58:19] game src/main.rs:151:32 Window: Exposed
+INFO [2022-11-06][06:58:19] game src/main.rs:151:32 Window: SizeChanged(854, 557)
+INFO [2022-11-06][06:58:19] game src/main.rs:145:29 Resizing to 854x557
+INFO [2022-11-06][06:58:19] game src/main.rs:151:32 Window: Exposed
+INFO [2022-11-06][06:58:19] game src/main.rs:151:32 Window: SizeChanged(854, 538)
+INFO [2022-11-06][06:58:19] game src/main.rs:145:29 Resizing to 854x538
+INFO [2022-11-06][06:58:19] game src/main.rs:151:32 Window: Exposed
+INFO [2022-11-06][06:58:19] game src/main.rs:151:32 Window: SizeChanged(854, 523)
+INFO [2022-11-06][06:58:19] game src/main.rs:145:29 Resizing to 854x523
+INFO [2022-11-06][06:58:19] game src/main.rs:151:32 Window: Exposed
+INFO [2022-11-06][06:58:19] game src/main.rs:151:32 Window: SizeChanged(854, 481)
+INFO [2022-11-06][06:58:19] game src/main.rs:145:29 Resizing to 854x481
+INFO [2022-11-06][06:58:19] game src/main.rs:151:32 Window: Exposed
+INFO [2022-11-06][06:58:19] game src/main.rs:151:32 Window: SizeChanged(854, 434)
+INFO [2022-11-06][06:58:19] game src/main.rs:145:29 Resizing to 854x434
+INFO [2022-11-06][06:58:19] game src/main.rs:151:32 Window: Exposed
+INFO [2022-11-06][06:58:19] game src/main.rs:151:32 Window: SizeChanged(854, 404)
+INFO [2022-11-06][06:58:19] game src/main.rs:145:29 Resizing to 854x404
+INFO [2022-11-06][06:58:19] game src/main.rs:151:32 Window: Exposed
+INFO [2022-11-06][06:58:19] game src/main.rs:151:32 Window: SizeChanged(854, 400)
+INFO [2022-11-06][06:58:19] game src/main.rs:145:29 Resizing to 854x400
+INFO [2022-11-06][06:58:19] game src/main.rs:151:32 Window: Exposed
+INFO [2022-11-06][06:58:19] game src/main.rs:151:32 Window: SizeChanged(854, 390)
+INFO [2022-11-06][06:58:19] game src/main.rs:145:29 Resizing to 854x390
+INFO [2022-11-06][06:58:19] game src/main.rs:151:32 Window: Exposed
+INFO [2022-11-06][06:58:19] game src/main.rs:151:32 Window: SizeChanged(854, 369)
+INFO [2022-11-06][06:58:19] game src/main.rs:145:29 Resizing to 854x369
+INFO [2022-11-06][06:58:19] game src/main.rs:151:32 Window: Exposed
+INFO [2022-11-06][06:58:19] game src/main.rs:151:32 Window: SizeChanged(854, 317)
+INFO [2022-11-06][06:58:19] game src/main.rs:145:29 Resizing to 854x317
+INFO [2022-11-06][06:58:19] game src/main.rs:151:32 Window: Exposed
+INFO [2022-11-06][06:58:19] game src/main.rs:151:32 Window: SizeChanged(854, 320)
+INFO [2022-11-06][06:58:19] game src/main.rs:145:29 Resizing to 854x320
+INFO [2022-11-06][06:58:19] game src/main.rs:151:32 Window: Exposed
+INFO [2022-11-06][06:58:19] game src/main.rs:151:32 Window: SizeChanged(854, 378)
+INFO [2022-11-06][06:58:19] game src/main.rs:145:29 Resizing to 854x378
+INFO [2022-11-06][06:58:19] game src/main.rs:151:32 Window: Exposed
+INFO [2022-11-06][06:58:19] game src/main.rs:151:32 Window: SizeChanged(854, 419)
+INFO [2022-11-06][06:58:19] game src/main.rs:145:29 Resizing to 854x419
+INFO [2022-11-06][06:58:19] game src/main.rs:151:32 Window: Exposed
+INFO [2022-11-06][06:58:19] game src/main.rs:151:32 Window: SizeChanged(854, 512)
+INFO [2022-11-06][06:58:19] game src/main.rs:145:29 Resizing to 854x512
+INFO [2022-11-06][06:58:19] game src/main.rs:151:32 Window: Exposed
+INFO [2022-11-06][06:58:19] game src/main.rs:151:32 Window: SizeChanged(854, 513)
+INFO [2022-11-06][06:58:19] game src/main.rs:145:29 Resizing to 854x513
+INFO [2022-11-06][06:58:19] game src/main.rs:151:32 Window: Exposed
+INFO [2022-11-06][06:58:19] game src/main.rs:151:32 Window: SizeChanged(854, 521)
+INFO [2022-11-06][06:58:19] game src/main.rs:145:29 Resizing to 854x521
+INFO [2022-11-06][06:58:19] game src/main.rs:151:32 Window: Exposed
+INFO [2022-11-06][06:58:20] game src/main.rs:151:32 Window: SizeChanged(854, 524)
+INFO [2022-11-06][06:58:20] game src/main.rs:145:29 Resizing to 854x524
+INFO [2022-11-06][06:58:20] game src/main.rs:151:32 Window: Exposed
+INFO [2022-11-06][06:58:20] game src/main.rs:151:32 Window: SizeChanged(854, 531)
+INFO [2022-11-06][06:58:20] game src/main.rs:145:29 Resizing to 854x531
+INFO [2022-11-06][06:58:20] game src/main.rs:151:32 Window: Exposed
+INFO [2022-11-06][06:58:20] game src/main.rs:151:32 Window: SizeChanged(854, 527)
+INFO [2022-11-06][06:58:20] game src/main.rs:145:29 Resizing to 854x527
+INFO [2022-11-06][06:58:20] game src/main.rs:151:32 Window: Exposed
+INFO [2022-11-06][06:58:20] game src/main.rs:151:32 Window: SizeChanged(854, 466)
+INFO [2022-11-06][06:58:20] game src/main.rs:145:29 Resizing to 854x466
+INFO [2022-11-06][06:58:20] game src/main.rs:151:32 Window: Exposed
+INFO [2022-11-06][06:58:20] game src/main.rs:151:32 Window: SizeChanged(854, 387)
+INFO [2022-11-06][06:58:20] game src/main.rs:145:29 Resizing to 854x387
+INFO [2022-11-06][06:58:20] game src/main.rs:151:32 Window: Exposed
+INFO [2022-11-06][06:58:20] game src/main.rs:151:32 Window: SizeChanged(854, 270)
+INFO [2022-11-06][06:58:20] game src/main.rs:145:29 Resizing to 854x270
+INFO [2022-11-06][06:58:20] game src/main.rs:151:32 Window: Exposed
+INFO [2022-11-06][06:58:20] game src/main.rs:151:32 Window: SizeChanged(854, 252)
+INFO [2022-11-06][06:58:20] game src/main.rs:145:29 Resizing to 854x252
+INFO [2022-11-06][06:58:20] game src/main.rs:151:32 Window: Exposed
+INFO [2022-11-06][06:58:20] game src/main.rs:151:32 Window: SizeChanged(854, 259)
+INFO [2022-11-06][06:58:20] game src/main.rs:145:29 Resizing to 854x259
+INFO [2022-11-06][06:58:20] game src/main.rs:151:32 Window: Exposed
+INFO [2022-11-06][06:58:20] game src/main.rs:151:32 Window: SizeChanged(854, 311)
+INFO [2022-11-06][06:58:20] game src/main.rs:145:29 Resizing to 854x311
+INFO [2022-11-06][06:58:20] game src/main.rs:151:32 Window: Exposed
+INFO [2022-11-06][06:58:20] game src/main.rs:151:32 Window: SizeChanged(854, 439)
+INFO [2022-11-06][06:58:20] game src/main.rs:145:29 Resizing to 854x439
+INFO [2022-11-06][06:58:20] game src/main.rs:151:32 Window: Exposed
+INFO [2022-11-06][06:58:20] game src/main.rs:151:32 Window: SizeChanged(854, 501)
+INFO [2022-11-06][06:58:20] game src/main.rs:145:29 Resizing to 854x501
+INFO [2022-11-06][06:58:20] game src/main.rs:151:32 Window: Exposed
+INFO [2022-11-06][06:58:20] game src/main.rs:151:32 Window: SizeChanged(854, 582)
+INFO [2022-11-06][06:58:20] game src/main.rs:145:29 Resizing to 854x582
+INFO [2022-11-06][06:58:20] game src/main.rs:151:32 Window: Exposed
+INFO [2022-11-06][06:58:20] game src/main.rs:151:32 Window: SizeChanged(854, 589)
+INFO [2022-11-06][06:58:20] game src/main.rs:145:29 Resizing to 854x589
+INFO [2022-11-06][06:58:20] game src/main.rs:151:32 Window: Exposed
+INFO [2022-11-06][06:58:21] game src/main.rs:151:32 Window: Enter
+INFO [2022-11-06][06:58:21] game src/main.rs:151:32 Window: Leave
+INFO [2022-11-06][06:58:21] game src/main.rs:151:32 Window: TakeFocus
+INFO [2022-11-06][06:58:21] game src/main.rs:151:32 Window: TakeFocus
+INFO [2022-11-06][06:58:22] game src/main.rs:151:32 Window: Moved(258, 172)
+INFO [2022-11-06][06:58:22] game src/main.rs:151:32 Window: Moved(263, 168)
+INFO [2022-11-06][06:58:22] game src/main.rs:151:32 Window: Moved(270, 154)
+INFO [2022-11-06][06:58:22] game src/main.rs:151:32 Window: Moved(279, 142)
+INFO [2022-11-06][06:58:22] game src/main.rs:151:32 Window: Moved(297, 118)
+INFO [2022-11-06][06:58:22] game src/main.rs:151:32 Window: Moved(302, 112)
+INFO [2022-11-06][06:58:22] game src/main.rs:151:32 Window: Moved(303, 108)
+INFO [2022-11-06][06:58:22] game src/main.rs:151:32 Window: Moved(304, 107)
+INFO [2022-11-06][06:58:22] game src/main.rs:151:32 Window: Moved(305, 106)
+INFO [2022-11-06][06:58:22] game src/main.rs:151:32 Window: Enter
+INFO [2022-11-06][06:58:23] game src/main.rs:151:32 Window: Leave
+INFO [2022-11-06][06:58:23] game src/main.rs:151:32 Window: TakeFocus
+INFO [2022-11-06][06:58:23] game src/main.rs:151:32 Window: TakeFocus
+INFO [2022-11-06][06:58:23] game src/main.rs:151:32 Window: Moved(306, 106)
+INFO [2022-11-06][06:58:23] game src/main.rs:151:32 Window: SizeChanged(853, 588)
+INFO [2022-11-06][06:58:23] game src/main.rs:145:29 Resizing to 853x588
+INFO [2022-11-06][06:58:23] game src/main.rs:151:32 Window: Exposed
+INFO [2022-11-06][06:58:23] game src/main.rs:151:32 Window: Moved(309, 106)
+INFO [2022-11-06][06:58:23] game src/main.rs:151:32 Window: SizeChanged(850, 581)
+INFO [2022-11-06][06:58:23] game src/main.rs:145:29 Resizing to 850x581
+INFO [2022-11-06][06:58:23] game src/main.rs:151:32 Window: Exposed
+INFO [2022-11-06][06:58:23] game src/main.rs:151:32 Window: Moved(313, 106)
+INFO [2022-11-06][06:58:23] game src/main.rs:151:32 Window: SizeChanged(846, 565)
+INFO [2022-11-06][06:58:23] game src/main.rs:145:29 Resizing to 846x565
+INFO [2022-11-06][06:58:23] game src/main.rs:151:32 Window: Exposed
+INFO [2022-11-06][06:58:23] game src/main.rs:151:32 Window: Moved(315, 106)
+INFO [2022-11-06][06:58:23] game src/main.rs:151:32 Window: SizeChanged(844, 550)
+INFO [2022-11-06][06:58:23] game src/main.rs:145:29 Resizing to 844x550
+INFO [2022-11-06][06:58:23] game src/main.rs:151:32 Window: Exposed
+INFO [2022-11-06][06:58:23] game src/main.rs:151:32 Window: Moved(316, 106)
+INFO [2022-11-06][06:58:23] game src/main.rs:151:32 Window: SizeChanged(843, 544)
+INFO [2022-11-06][06:58:23] game src/main.rs:145:29 Resizing to 843x544
+INFO [2022-11-06][06:58:23] game src/main.rs:151:32 Window: Exposed
+INFO [2022-11-06][06:58:23] game src/main.rs:151:32 Window: Moved(324, 106)
+INFO [2022-11-06][06:58:23] game src/main.rs:151:32 Window: SizeChanged(835, 524)
+INFO [2022-11-06][06:58:23] game src/main.rs:145:29 Resizing to 835x524
+INFO [2022-11-06][06:58:23] game src/main.rs:151:32 Window: Exposed
+INFO [2022-11-06][06:58:23] game src/main.rs:151:32 Window: Moved(329, 106)
+INFO [2022-11-06][06:58:23] game src/main.rs:151:32 Window: SizeChanged(830, 513)
+INFO [2022-11-06][06:58:23] game src/main.rs:145:29 Resizing to 830x513
+INFO [2022-11-06][06:58:23] game src/main.rs:151:32 Window: Exposed
+INFO [2022-11-06][06:58:23] game src/main.rs:151:32 Window: Moved(331, 106)
+INFO [2022-11-06][06:58:23] game src/main.rs:151:32 Window: SizeChanged(828, 508)
+INFO [2022-11-06][06:58:23] game src/main.rs:145:29 Resizing to 828x508
+INFO [2022-11-06][06:58:23] game src/main.rs:151:32 Window: Exposed
+INFO [2022-11-06][06:58:23] game src/main.rs:151:32 Window: Moved(339, 106)
+INFO [2022-11-06][06:58:23] game src/main.rs:151:32 Window: SizeChanged(820, 490)
+INFO [2022-11-06][06:58:23] game src/main.rs:145:29 Resizing to 820x490
+INFO [2022-11-06][06:58:23] game src/main.rs:151:32 Window: Exposed
+INFO [2022-11-06][06:58:23] game src/main.rs:151:32 Window: Moved(341, 106)
+INFO [2022-11-06][06:58:23] game src/main.rs:151:32 Window: SizeChanged(818, 484)
+INFO [2022-11-06][06:58:23] game src/main.rs:145:29 Resizing to 818x484
+INFO [2022-11-06][06:58:23] game src/main.rs:151:32 Window: Exposed
+INFO [2022-11-06][06:58:23] game src/main.rs:151:32 Window: Moved(343, 106)
+INFO [2022-11-06][06:58:23] game src/main.rs:151:32 Window: SizeChanged(816, 477)
+INFO [2022-11-06][06:58:23] game src/main.rs:145:29 Resizing to 816x477
+INFO [2022-11-06][06:58:23] game src/main.rs:151:32 Window: Exposed
+INFO [2022-11-06][06:58:23] game src/main.rs:151:32 Window: SizeChanged(816, 475)
+INFO [2022-11-06][06:58:23] game src/main.rs:145:29 Resizing to 816x475
+INFO [2022-11-06][06:58:23] game src/main.rs:151:32 Window: Exposed
+INFO [2022-11-06][06:58:24] game src/main.rs:151:32 Window: Enter
+INFO [2022-11-06][06:58:24] game src/main.rs:151:32 Window: Leave
+INFO [2022-11-06][06:58:25] game src/main.rs:151:32 Window: Close

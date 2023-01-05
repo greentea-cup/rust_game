@@ -1,0 +1,248 @@
+INFO [2022-11-01][10:24:08] game src/main.rs:46:5 Running
+INFO [2022-11-01][10:24:09] game src/main.rs:164:21 KeyDown:
+INFO [2022-11-01][10:24:09] game src/main.rs:166:37 Keycode D, 100
+INFO [2022-11-01][10:24:09] game src/main.rs:170:37 Scancde D, 7
+INFO [2022-11-01][10:24:09] game src/main.rs:173:21 Keymod: 0000
+INFO [2022-11-01][10:24:09] game src/main.rs:154:21 TextInput
+INFO [2022-11-01][10:24:09] game src/main.rs:184:21 KeyUp:
+INFO [2022-11-01][10:24:09] game src/main.rs:186:37 Keycode D, 100
+INFO [2022-11-01][10:24:09] game src/main.rs:190:37 Scancde D, 7
+INFO [2022-11-01][10:24:09] game src/main.rs:193:21 Keymod: 0000
+INFO [2022-11-01][10:24:09] game src/main.rs:164:21 KeyDown:
+INFO [2022-11-01][10:24:09] game src/main.rs:166:37 Keycode S, 115
+INFO [2022-11-01][10:24:09] game src/main.rs:170:37 Scancde S, 22
+INFO [2022-11-01][10:24:09] game src/main.rs:173:21 Keymod: 0000
+INFO [2022-11-01][10:24:09] game src/main.rs:154:21 TextInput
+INFO [2022-11-01][10:24:09] game src/main.rs:164:21 KeyDown:
+INFO [2022-11-01][10:24:09] game src/main.rs:166:37 Keycode D, 100
+INFO [2022-11-01][10:24:09] game src/main.rs:170:37 Scancde D, 7
+INFO [2022-11-01][10:24:09] game src/main.rs:173:21 Keymod: 0000
+INFO [2022-11-01][10:24:09] game src/main.rs:154:21 TextInput
+INFO [2022-11-01][10:24:09] game src/main.rs:184:21 KeyUp:
+INFO [2022-11-01][10:24:09] game src/main.rs:186:37 Keycode S, 115
+INFO [2022-11-01][10:24:09] game src/main.rs:190:37 Scancde S, 22
+INFO [2022-11-01][10:24:09] game src/main.rs:193:21 Keymod: 0000
+INFO [2022-11-01][10:24:09] game src/main.rs:164:21 KeyDown:
+INFO [2022-11-01][10:24:09] game src/main.rs:166:37 Keycode S, 115
+INFO [2022-11-01][10:24:09] game src/main.rs:170:37 Scancde S, 22
+INFO [2022-11-01][10:24:09] game src/main.rs:173:21 Keymod: 0000
+INFO [2022-11-01][10:24:09] game src/main.rs:154:21 TextInput
+INFO [2022-11-01][10:24:09] game src/main.rs:184:21 KeyUp:
+INFO [2022-11-01][10:24:09] game src/main.rs:186:37 Keycode D, 100
+INFO [2022-11-01][10:24:09] game src/main.rs:190:37 Scancde D, 7
+INFO [2022-11-01][10:24:09] game src/main.rs:193:21 Keymod: 0000
+INFO [2022-11-01][10:24:09] game src/main.rs:184:21 KeyUp:
+INFO [2022-11-01][10:24:09] game src/main.rs:186:37 Keycode S, 115
+INFO [2022-11-01][10:24:09] game src/main.rs:190:37 Scancde S, 22
+INFO [2022-11-01][10:24:09] game src/main.rs:193:21 Keymod: 0000
+INFO [2022-11-01][10:24:09] game src/main.rs:164:21 KeyDown:
+INFO [2022-11-01][10:24:09] game src/main.rs:166:37 Keycode D, 100
+INFO [2022-11-01][10:24:09] game src/main.rs:170:37 Scancde D, 7
+INFO [2022-11-01][10:24:09] game src/main.rs:173:21 Keymod: 0000
+INFO [2022-11-01][10:24:09] game src/main.rs:154:21 TextInput
+INFO [2022-11-01][10:24:10] game src/main.rs:164:21 KeyDown:
+INFO [2022-11-01][10:24:10] game src/main.rs:166:37 Keycode S, 115
+INFO [2022-11-01][10:24:10] game src/main.rs:170:37 Scancde S, 22
+INFO [2022-11-01][10:24:10] game src/main.rs:173:21 Keymod: 0000
+INFO [2022-11-01][10:24:10] game src/main.rs:154:21 TextInput
+INFO [2022-11-01][10:24:10] game src/main.rs:184:21 KeyUp:
+INFO [2022-11-01][10:24:10] game src/main.rs:186:37 Keycode D, 100
+INFO [2022-11-01][10:24:10] game src/main.rs:190:37 Scancde D, 7
+INFO [2022-11-01][10:24:10] game src/main.rs:193:21 Keymod: 0000
+INFO [2022-11-01][10:24:10] game src/main.rs:164:21 KeyDown:
+INFO [2022-11-01][10:24:10] game src/main.rs:166:37 Keycode A, 97
+INFO [2022-11-01][10:24:10] game src/main.rs:170:37 Scancde A, 4
+INFO [2022-11-01][10:24:10] game src/main.rs:173:21 Keymod: 0000
+INFO [2022-11-01][10:24:10] game src/main.rs:154:21 TextInput
+INFO [2022-11-01][10:24:10] game src/main.rs:184:21 KeyUp:
+INFO [2022-11-01][10:24:10] game src/main.rs:186:37 Keycode A, 97
+INFO [2022-11-01][10:24:10] game src/main.rs:190:37 Scancde A, 4
+INFO [2022-11-01][10:24:10] game src/main.rs:193:21 Keymod: 0000
+INFO [2022-11-01][10:24:10] game src/main.rs:184:21 KeyUp:
+INFO [2022-11-01][10:24:10] game src/main.rs:186:37 Keycode S, 115
+INFO [2022-11-01][10:24:10] game src/main.rs:190:37 Scancde S, 22
+INFO [2022-11-01][10:24:10] game src/main.rs:193:21 Keymod: 0000
+INFO [2022-11-01][10:24:10] game src/main.rs:164:21 KeyDown:
+INFO [2022-11-01][10:24:10] game src/main.rs:166:37 Keycode F, 102
+INFO [2022-11-01][10:24:10] game src/main.rs:170:37 Scancde F, 9
+INFO [2022-11-01][10:24:10] game src/main.rs:173:21 Keymod: 0000
+INFO [2022-11-01][10:24:10] game src/main.rs:154:21 TextInput
+INFO [2022-11-01][10:24:10] game src/main.rs:184:21 KeyUp:
+INFO [2022-11-01][10:24:10] game src/main.rs:186:37 Keycode F, 102
+INFO [2022-11-01][10:24:10] game src/main.rs:190:37 Scancde F, 9
+INFO [2022-11-01][10:24:10] game src/main.rs:193:21 Keymod: 0000
+INFO [2022-11-01][10:24:10] game src/main.rs:164:21 KeyDown:
+INFO [2022-11-01][10:24:10] game src/main.rs:166:37 Keycode F, 102
+INFO [2022-11-01][10:24:10] game src/main.rs:170:37 Scancde F, 9
+INFO [2022-11-01][10:24:10] game src/main.rs:173:21 Keymod: 0000
+INFO [2022-11-01][10:24:10] game src/main.rs:154:21 TextInput
+INFO [2022-11-01][10:24:10] game src/main.rs:184:21 KeyUp:
+INFO [2022-11-01][10:24:10] game src/main.rs:186:37 Keycode F, 102
+INFO [2022-11-01][10:24:10] game src/main.rs:190:37 Scancde F, 9
+INFO [2022-11-01][10:24:10] game src/main.rs:193:21 Keymod: 0000
+INFO [2022-11-01][10:24:10] game src/main.rs:164:21 KeyDown:
+INFO [2022-11-01][10:24:10] game src/main.rs:166:37 Keycode V, 118
+INFO [2022-11-01][10:24:10] game src/main.rs:170:37 Scancde V, 25
+INFO [2022-11-01][10:24:10] game src/main.rs:173:21 Keymod: 0000
+INFO [2022-11-01][10:24:10] game src/main.rs:154:21 TextInput
+INFO [2022-11-01][10:24:10] game src/main.rs:184:21 KeyUp:
+INFO [2022-11-01][10:24:10] game src/main.rs:186:37 Keycode V, 118
+INFO [2022-11-01][10:24:10] game src/main.rs:190:37 Scancde V, 25
+INFO [2022-11-01][10:24:10] game src/main.rs:193:21 Keymod: 0000
+INFO [2022-11-01][10:24:10] game src/main.rs:164:21 KeyDown:
+INFO [2022-11-01][10:24:10] game src/main.rs:166:37 Keycode Space, 32
+INFO [2022-11-01][10:24:10] game src/main.rs:170:37 Scancde Space, 44
+INFO [2022-11-01][10:24:10] game src/main.rs:173:21 Keymod: 0000
+INFO [2022-11-01][10:24:10] game src/main.rs:154:21 TextInput
+INFO [2022-11-01][10:24:11] game src/main.rs:184:21 KeyUp:
+INFO [2022-11-01][10:24:11] game src/main.rs:186:37 Keycode Space, 32
+INFO [2022-11-01][10:24:11] game src/main.rs:190:37 Scancde Space, 44
+INFO [2022-11-01][10:24:11] game src/main.rs:193:21 Keymod: 0000
+INFO [2022-11-01][10:24:11] game src/main.rs:164:21 KeyDown:
+INFO [2022-11-01][10:24:11] game src/main.rs:166:37 Keycode Space, 32
+INFO [2022-11-01][10:24:11] game src/main.rs:170:37 Scancde Space, 44
+INFO [2022-11-01][10:24:11] game src/main.rs:173:21 Keymod: 0000
+INFO [2022-11-01][10:24:11] game src/main.rs:154:21 TextInput
+INFO [2022-11-01][10:24:11] game src/main.rs:184:21 KeyUp:
+INFO [2022-11-01][10:24:11] game src/main.rs:186:37 Keycode Space, 32
+INFO [2022-11-01][10:24:11] game src/main.rs:190:37 Scancde Space, 44
+INFO [2022-11-01][10:24:11] game src/main.rs:193:21 Keymod: 0000
+INFO [2022-11-01][10:24:11] game src/main.rs:164:21 KeyDown:
+INFO [2022-11-01][10:24:11] game src/main.rs:166:37 Keycode Space, 32
+INFO [2022-11-01][10:24:11] game src/main.rs:170:37 Scancde Space, 44
+INFO [2022-11-01][10:24:11] game src/main.rs:173:21 Keymod: 0000
+INFO [2022-11-01][10:24:11] game src/main.rs:154:21 TextInput
+INFO [2022-11-01][10:24:11] game src/main.rs:184:21 KeyUp:
+INFO [2022-11-01][10:24:11] game src/main.rs:186:37 Keycode Space, 32
+INFO [2022-11-01][10:24:11] game src/main.rs:190:37 Scancde Space, 44
+INFO [2022-11-01][10:24:11] game src/main.rs:193:21 Keymod: 0000
+INFO [2022-11-01][10:24:11] game src/main.rs:164:21 KeyDown:
+INFO [2022-11-01][10:24:11] game src/main.rs:166:37 Keycode Space, 32
+INFO [2022-11-01][10:24:11] game src/main.rs:170:37 Scancde Space, 44
+INFO [2022-11-01][10:24:11] game src/main.rs:173:21 Keymod: 0000
+INFO [2022-11-01][10:24:11] game src/main.rs:154:21 TextInput
+INFO [2022-11-01][10:24:11] game src/main.rs:184:21 KeyUp:
+INFO [2022-11-01][10:24:11] game src/main.rs:186:37 Keycode Space, 32
+INFO [2022-11-01][10:24:11] game src/main.rs:190:37 Scancde Space, 44
+INFO [2022-11-01][10:24:11] game src/main.rs:193:21 Keymod: 0000
+INFO [2022-11-01][10:24:14] game src/main.rs:164:21 KeyDown:
+INFO [2022-11-01][10:24:14] game src/main.rs:166:37 Keycode D, 100
+INFO [2022-11-01][10:24:14] game src/main.rs:170:37 Scancde D, 7
+INFO [2022-11-01][10:24:14] game src/main.rs:173:21 Keymod: 0000
+INFO [2022-11-01][10:24:14] game src/main.rs:154:21 TextInput
+INFO [2022-11-01][10:24:14] game src/main.rs:184:21 KeyUp:
+INFO [2022-11-01][10:24:14] game src/main.rs:186:37 Keycode D, 100
+INFO [2022-11-01][10:24:14] game src/main.rs:190:37 Scancde D, 7
+INFO [2022-11-01][10:24:14] game src/main.rs:193:21 Keymod: 0000
+INFO [2022-11-01][10:24:14] game src/main.rs:164:21 KeyDown:
+INFO [2022-11-01][10:24:14] game src/main.rs:166:37 Keycode S, 115
+INFO [2022-11-01][10:24:14] game src/main.rs:170:37 Scancde S, 22
+INFO [2022-11-01][10:24:14] game src/main.rs:173:21 Keymod: 0000
+INFO [2022-11-01][10:24:14] game src/main.rs:154:21 TextInput
+INFO [2022-11-01][10:24:14] game src/main.rs:184:21 KeyUp:
+INFO [2022-11-01][10:24:14] game src/main.rs:186:37 Keycode S, 115
+INFO [2022-11-01][10:24:14] game src/main.rs:190:37 Scancde S, 22
+INFO [2022-11-01][10:24:14] game src/main.rs:193:21 Keymod: 0000
+INFO [2022-11-01][10:24:15] game src/main.rs:164:21 KeyDown:
+INFO [2022-11-01][10:24:15] game src/main.rs:166:37 Keycode D, 100
+INFO [2022-11-01][10:24:15] game src/main.rs:170:37 Scancde D, 7
+INFO [2022-11-01][10:24:15] game src/main.rs:173:21 Keymod: 0000
+INFO [2022-11-01][10:24:15] game src/main.rs:154:21 TextInput
+INFO [2022-11-01][10:24:15] game src/main.rs:164:21 KeyDown:
+INFO [2022-11-01][10:24:15] game src/main.rs:166:37 Keycode S, 115
+INFO [2022-11-01][10:24:15] game src/main.rs:170:37 Scancde S, 22
+INFO [2022-11-01][10:24:15] game src/main.rs:173:21 Keymod: 0000
+INFO [2022-11-01][10:24:15] game src/main.rs:154:21 TextInput
+INFO [2022-11-01][10:24:15] game src/main.rs:184:21 KeyUp:
+INFO [2022-11-01][10:24:15] game src/main.rs:186:37 Keycode D, 100
+INFO [2022-11-01][10:24:15] game src/main.rs:190:37 Scancde D, 7
+INFO [2022-11-01][10:24:15] game src/main.rs:193:21 Keymod: 0000
+INFO [2022-11-01][10:24:15] game src/main.rs:184:21 KeyUp:
+INFO [2022-11-01][10:24:15] game src/main.rs:186:37 Keycode S, 115
+INFO [2022-11-01][10:24:15] game src/main.rs:190:37 Scancde S, 22
+INFO [2022-11-01][10:24:15] game src/main.rs:193:21 Keymod: 0000
+INFO [2022-11-01][10:24:15] game src/main.rs:164:21 KeyDown:
+INFO [2022-11-01][10:24:15] game src/main.rs:166:37 Keycode D, 100
+INFO [2022-11-01][10:24:15] game src/main.rs:170:37 Scancde D, 7
+INFO [2022-11-01][10:24:15] game src/main.rs:173:21 Keymod: 0000
+INFO [2022-11-01][10:24:15] game src/main.rs:154:21 TextInput
+INFO [2022-11-01][10:24:15] game src/main.rs:164:21 KeyDown:
+INFO [2022-11-01][10:24:15] game src/main.rs:166:37 Keycode S, 115
+INFO [2022-11-01][10:24:15] game src/main.rs:170:37 Scancde S, 22
+INFO [2022-11-01][10:24:15] game src/main.rs:173:21 Keymod: 0000
+INFO [2022-11-01][10:24:15] game src/main.rs:154:21 TextInput
+INFO [2022-11-01][10:24:15] game src/main.rs:184:21 KeyUp:
+INFO [2022-11-01][10:24:15] game src/main.rs:186:37 Keycode D, 100
+INFO [2022-11-01][10:24:15] game src/main.rs:190:37 Scancde D, 7
+INFO [2022-11-01][10:24:15] game src/main.rs:193:21 Keymod: 0000
+INFO [2022-11-01][10:24:15] game src/main.rs:184:21 KeyUp:
+INFO [2022-11-01][10:24:15] game src/main.rs:186:37 Keycode S, 115
+INFO [2022-11-01][10:24:15] game src/main.rs:190:37 Scancde S, 22
+INFO [2022-11-01][10:24:15] game src/main.rs:193:21 Keymod: 0000
+INFO [2022-11-01][10:24:15] game src/main.rs:164:21 KeyDown:
+INFO [2022-11-01][10:24:15] game src/main.rs:166:37 Keycode Q, 113
+INFO [2022-11-01][10:24:15] game src/main.rs:170:37 Scancde Q, 20
+INFO [2022-11-01][10:24:15] game src/main.rs:173:21 Keymod: 0000
+INFO [2022-11-01][10:24:15] game src/main.rs:154:21 TextInput
+INFO [2022-11-01][10:24:15] game src/main.rs:184:21 KeyUp:
+INFO [2022-11-01][10:24:15] game src/main.rs:186:37 Keycode Q, 113
+INFO [2022-11-01][10:24:15] game src/main.rs:190:37 Scancde Q, 20
+INFO [2022-11-01][10:24:15] game src/main.rs:193:21 Keymod: 0000
+INFO [2022-11-01][10:24:16] game src/main.rs:164:21 KeyDown:
+INFO [2022-11-01][10:24:16] game src/main.rs:166:37 Keycode 1, 49
+INFO [2022-11-01][10:24:16] game src/main.rs:170:37 Scancde 1, 30
+INFO [2022-11-01][10:24:16] game src/main.rs:173:21 Keymod: 0000
+INFO [2022-11-01][10:24:16] game src/main.rs:154:21 TextInput
+INFO [2022-11-01][10:24:16] game src/main.rs:164:21 KeyDown:
+INFO [2022-11-01][10:24:16] game src/main.rs:166:37 Keycode 2, 50
+INFO [2022-11-01][10:24:16] game src/main.rs:170:37 Scancde 2, 31
+INFO [2022-11-01][10:24:16] game src/main.rs:173:21 Keymod: 0000
+INFO [2022-11-01][10:24:16] game src/main.rs:154:21 TextInput
+INFO [2022-11-01][10:24:16] game src/main.rs:184:21 KeyUp:
+INFO [2022-11-01][10:24:16] game src/main.rs:186:37 Keycode 1, 49
+INFO [2022-11-01][10:24:16] game src/main.rs:190:37 Scancde 1, 30
+INFO [2022-11-01][10:24:16] game src/main.rs:193:21 Keymod: 0000
+INFO [2022-11-01][10:24:16] game src/main.rs:184:21 KeyUp:
+INFO [2022-11-01][10:24:16] game src/main.rs:186:37 Keycode 2, 50
+INFO [2022-11-01][10:24:16] game src/main.rs:190:37 Scancde 2, 31
+INFO [2022-11-01][10:24:16] game src/main.rs:193:21 Keymod: 0000
+INFO [2022-11-01][10:24:16] game src/main.rs:164:21 KeyDown:
+INFO [2022-11-01][10:24:16] game src/main.rs:166:37 Keycode Space, 32
+INFO [2022-11-01][10:24:16] game src/main.rs:170:37 Scancde Space, 44
+INFO [2022-11-01][10:24:16] game src/main.rs:173:21 Keymod: 0000
+INFO [2022-11-01][10:24:16] game src/main.rs:154:21 TextInput
+INFO [2022-11-01][10:24:17] game src/main.rs:184:21 KeyUp:
+INFO [2022-11-01][10:24:17] game src/main.rs:186:37 Keycode Space, 32
+INFO [2022-11-01][10:24:17] game src/main.rs:190:37 Scancde Space, 44
+INFO [2022-11-01][10:24:17] game src/main.rs:193:21 Keymod: 0000
+INFO [2022-11-01][10:24:25] game src/main.rs:217:21 MouseButtonUp
+INFO [2022-11-01][10:24:25] game src/main.rs:217:21 MouseButtonUp
+INFO [2022-11-01][10:24:26] game src/main.rs:217:21 MouseButtonUp
+INFO [2022-11-01][10:24:26] game src/main.rs:217:21 MouseButtonUp
+INFO [2022-11-01][10:24:26] game src/main.rs:217:21 MouseButtonUp
+INFO [2022-11-01][10:24:27] game src/main.rs:217:21 MouseButtonUp
+INFO [2022-11-01][10:24:27] game src/main.rs:217:21 MouseButtonUp
+INFO [2022-11-01][10:24:27] game src/main.rs:217:21 MouseButtonUp
+INFO [2022-11-01][10:24:28] game src/main.rs:217:21 MouseButtonUp
+INFO [2022-11-01][10:24:28] game src/main.rs:217:21 MouseButtonUp
+INFO [2022-11-01][10:24:28] game src/main.rs:217:21 MouseButtonUp
+INFO [2022-11-01][10:24:29] game src/main.rs:164:21 KeyDown:
+INFO [2022-11-01][10:24:29] game src/main.rs:166:37 Keycode Left GUI, 1073742051
+INFO [2022-11-01][10:24:29] game src/main.rs:170:37 Scancde Left GUI, 227
+INFO [2022-11-01][10:24:29] game src/main.rs:173:21 Keymod: 0400
+INFO [2022-11-01][10:24:29] game src/main.rs:164:21 KeyDown:
+INFO [2022-11-01][10:24:29] game src/main.rs:166:37 Keycode F4, 1073741885
+INFO [2022-11-01][10:24:29] game src/main.rs:170:37 Scancde F4, 61
+INFO [2022-11-01][10:24:29] game src/main.rs:173:21 Keymod: 0400
+INFO [2022-11-01][10:24:30] game src/main.rs:184:21 KeyUp:
+INFO [2022-11-01][10:24:30] game src/main.rs:186:37 Keycode F4, 1073741885
+INFO [2022-11-01][10:24:30] game src/main.rs:190:37 Scancde F4, 61
+INFO [2022-11-01][10:24:30] game src/main.rs:193:21 Keymod: 0400
+INFO [2022-11-01][10:24:30] game src/main.rs:184:21 KeyUp:
+INFO [2022-11-01][10:24:30] game src/main.rs:186:37 Keycode Left GUI, 1073742051
+INFO [2022-11-01][10:24:30] game src/main.rs:190:37 Scancde Left GUI, 227
+INFO [2022-11-01][10:24:30] game src/main.rs:193:21 Keymod: 0000
+INFO [2022-11-01][10:24:30] game src/main.rs:164:21 KeyDown:
+INFO [2022-11-01][10:24:30] game src/main.rs:166:37 Keycode Left Alt, 1073742050
+INFO [2022-11-01][10:24:30] game src/main.rs:170:37 Scancde Left Alt, 226
+INFO [2022-11-01][10:24:30] game src/main.rs:173:21 Keymod: 0100

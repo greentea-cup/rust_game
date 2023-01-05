@@ -1,0 +1,604 @@
+INFO [2022-11-06][06:47:15] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:15] game src/main.rs:165:32 Window: Shown
+INFO [2022-11-06][06:47:15] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:15] game src/main.rs:165:32 Window: Moved(256, 172)
+INFO [2022-11-06][06:47:15] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:15] game src/main.rs:165:32 Window: Exposed
+INFO [2022-11-06][06:47:15] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:15] game src/main.rs:165:32 Window: FocusGained
+INFO [2022-11-06][06:47:15] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:15] game src/main.rs:165:32 Window: TakeFocus
+INFO [2022-11-06][06:47:16] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:16] game src/main.rs:165:32 Window: Enter
+INFO [2022-11-06][06:47:16] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:16] game src/main.rs:165:32 Window: Leave
+INFO [2022-11-06][06:47:18] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:18] game src/main.rs:165:32 Window: TakeFocus
+INFO [2022-11-06][06:47:18] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:18] game src/main.rs:165:32 Window: TakeFocus
+INFO [2022-11-06][06:47:19] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:19] game src/main.rs:165:32 Window: TakeFocus
+INFO [2022-11-06][06:47:19] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:19] game src/main.rs:165:32 Window: TakeFocus
+INFO [2022-11-06][06:47:19] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:19] game src/main.rs:165:32 Window: Moved(257, 172)
+INFO [2022-11-06][06:47:19] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:19] game src/main.rs:165:32 Window: Moved(272, 180)
+INFO [2022-11-06][06:47:19] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:19] game src/main.rs:165:32 Window: Moved(297, 192)
+INFO [2022-11-06][06:47:19] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:19] game src/main.rs:165:32 Window: Moved(343, 218)
+INFO [2022-11-06][06:47:19] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:19] game src/main.rs:165:32 Window: Moved(385, 238)
+INFO [2022-11-06][06:47:19] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:19] game src/main.rs:165:32 Window: Moved(411, 248)
+INFO [2022-11-06][06:47:19] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:19] game src/main.rs:165:32 Window: Moved(432, 254)
+INFO [2022-11-06][06:47:20] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:20] game src/main.rs:165:32 Window: TakeFocus
+INFO [2022-11-06][06:47:20] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:20] game src/main.rs:165:32 Window: TakeFocus
+INFO [2022-11-06][06:47:20] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:20] game src/main.rs:165:32 Window: Moved(433, 256)
+INFO [2022-11-06][06:47:20] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:20] game src/main.rs:165:32 Window: Moved(437, 256)
+INFO [2022-11-06][06:47:20] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:20] game src/main.rs:165:32 Window: Moved(446, 258)
+INFO [2022-11-06][06:47:20] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:20] game src/main.rs:165:32 Window: Moved(463, 259)
+INFO [2022-11-06][06:47:20] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:20] game src/main.rs:165:32 Window: Moved(475, 261)
+INFO [2022-11-06][06:47:20] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:20] game src/main.rs:165:32 Window: Moved(485, 262)
+INFO [2022-11-06][06:47:20] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:20] game src/main.rs:165:32 Window: Moved(491, 262)
+INFO [2022-11-06][06:47:20] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:20] game src/main.rs:165:32 Window: Moved(492, 262)
+INFO [2022-11-06][06:47:20] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:20] game src/main.rs:165:32 Window: Enter
+DEBUG [2022-11-06][06:47:20] game src/main.rs:235:21 MouseButtonDown
+DEBUG [2022-11-06][06:47:20] game src/main.rs:247:21 MouseButtonUp
+INFO [2022-11-06][06:47:22] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:22] game src/main.rs:165:32 Window: Leave
+INFO [2022-11-06][06:47:22] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:22] game src/main.rs:165:32 Window: TakeFocus
+INFO [2022-11-06][06:47:22] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:22] game src/main.rs:165:32 Window: TakeFocus
+INFO [2022-11-06][06:47:22] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:22] game src/main.rs:165:32 Window: Moved(493, 262)
+INFO [2022-11-06][06:47:22] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:22] game src/main.rs:165:32 Window: Moved(497, 263)
+INFO [2022-11-06][06:47:22] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:22] game src/main.rs:165:32 Window: Moved(500, 263)
+INFO [2022-11-06][06:47:22] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:22] game src/main.rs:165:32 Window: Moved(505, 264)
+INFO [2022-11-06][06:47:22] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:22] game src/main.rs:165:32 Window: Moved(512, 267)
+INFO [2022-11-06][06:47:22] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:22] game src/main.rs:165:32 Window: Moved(512, 261)
+INFO [2022-11-06][06:47:22] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:22] game src/main.rs:165:32 Window: Moved(549, 256)
+INFO [2022-11-06][06:47:22] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:22] game src/main.rs:165:32 Window: Moved(559, 247)
+INFO [2022-11-06][06:47:22] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:22] game src/main.rs:165:32 Window: Moved(571, 239)
+INFO [2022-11-06][06:47:22] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:22] game src/main.rs:165:32 Window: Moved(583, 231)
+INFO [2022-11-06][06:47:22] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:22] game src/main.rs:165:32 Window: Moved(592, 222)
+INFO [2022-11-06][06:47:23] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:23] game src/main.rs:165:32 Window: Moved(597, 218)
+INFO [2022-11-06][06:47:23] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:23] game src/main.rs:165:32 Window: Moved(598, 217)
+INFO [2022-11-06][06:47:23] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:23] game src/main.rs:165:32 Window: Moved(599, 216)
+INFO [2022-11-06][06:47:23] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:23] game src/main.rs:165:32 Window: Moved(586, 222)
+INFO [2022-11-06][06:47:23] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:23] game src/main.rs:165:32 Window: Moved(573, 228)
+INFO [2022-11-06][06:47:23] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:23] game src/main.rs:165:32 Window: Moved(559, 232)
+INFO [2022-11-06][06:47:23] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:23] game src/main.rs:165:32 Window: Moved(548, 237)
+INFO [2022-11-06][06:47:23] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:23] game src/main.rs:165:32 Window: Moved(540, 238)
+INFO [2022-11-06][06:47:23] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:23] game src/main.rs:165:32 Window: Moved(535, 238)
+INFO [2022-11-06][06:47:23] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:23] game src/main.rs:165:32 Window: Moved(531, 238)
+INFO [2022-11-06][06:47:23] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:23] game src/main.rs:165:32 Window: Moved(529, 238)
+INFO [2022-11-06][06:47:23] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:23] game src/main.rs:165:32 Window: Moved(525, 238)
+INFO [2022-11-06][06:47:23] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:23] game src/main.rs:165:32 Window: Moved(520, 238)
+INFO [2022-11-06][06:47:23] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:23] game src/main.rs:165:32 Window: Moved(512, 235)
+INFO [2022-11-06][06:47:23] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:23] game src/main.rs:165:32 Window: Moved(473, 222)
+INFO [2022-11-06][06:47:23] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:23] game src/main.rs:165:32 Window: Moved(454, 213)
+INFO [2022-11-06][06:47:23] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:23] game src/main.rs:165:32 Window: Moved(435, 201)
+INFO [2022-11-06][06:47:23] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:23] game src/main.rs:165:32 Window: Moved(424, 189)
+INFO [2022-11-06][06:47:23] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:23] game src/main.rs:165:32 Window: Moved(412, 176)
+INFO [2022-11-06][06:47:23] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:23] game src/main.rs:165:32 Window: Moved(403, 155)
+INFO [2022-11-06][06:47:23] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:23] game src/main.rs:165:32 Window: Moved(397, 131)
+INFO [2022-11-06][06:47:23] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:23] game src/main.rs:165:32 Window: Moved(390, 79)
+INFO [2022-11-06][06:47:23] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:23] game src/main.rs:165:32 Window: Moved(385, 42)
+INFO [2022-11-06][06:47:23] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:23] game src/main.rs:165:32 Window: Moved(383, 35)
+INFO [2022-11-06][06:47:23] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:23] game src/main.rs:165:32 Window: Moved(382, 34)
+INFO [2022-11-06][06:47:24] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:24] game src/main.rs:165:32 Window: Moved(378, 34)
+INFO [2022-11-06][06:47:24] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:24] game src/main.rs:165:32 Window: Moved(364, 40)
+INFO [2022-11-06][06:47:24] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:24] game src/main.rs:165:32 Window: Moved(339, 54)
+INFO [2022-11-06][06:47:24] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:24] game src/main.rs:165:32 Window: Moved(295, 72)
+INFO [2022-11-06][06:47:24] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:24] game src/main.rs:165:32 Window: Moved(245, 78)
+INFO [2022-11-06][06:47:24] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:24] game src/main.rs:165:32 Window: Moved(189, 108)
+INFO [2022-11-06][06:47:24] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:24] game src/main.rs:165:32 Window: Moved(133, 114)
+INFO [2022-11-06][06:47:24] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:24] game src/main.rs:165:32 Window: Moved(85, 122)
+INFO [2022-11-06][06:47:24] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:24] game src/main.rs:165:32 Window: Moved(40, 129)
+INFO [2022-11-06][06:47:24] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:24] game src/main.rs:165:32 Window: Moved(40, 131)
+INFO [2022-11-06][06:47:24] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:24] game src/main.rs:165:32 Window: Moved(40, 132)
+INFO [2022-11-06][06:47:24] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:24] game src/main.rs:165:32 Window: Moved(40, 134)
+INFO [2022-11-06][06:47:24] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:24] game src/main.rs:165:32 Window: Moved(40, 136)
+INFO [2022-11-06][06:47:24] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:24] game src/main.rs:165:32 Window: Moved(40, 140)
+INFO [2022-11-06][06:47:24] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:24] game src/main.rs:165:32 Window: Moved(40, 146)
+INFO [2022-11-06][06:47:24] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:24] game src/main.rs:165:32 Window: Moved(40, 158)
+INFO [2022-11-06][06:47:24] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:24] game src/main.rs:165:32 Window: Moved(40, 189)
+INFO [2022-11-06][06:47:24] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:24] game src/main.rs:165:32 Window: Moved(90, 209)
+INFO [2022-11-06][06:47:24] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:24] game src/main.rs:165:32 Window: Moved(154, 229)
+INFO [2022-11-06][06:47:24] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:24] game src/main.rs:165:32 Window: Moved(230, 243)
+INFO [2022-11-06][06:47:24] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:24] game src/main.rs:165:32 Window: Moved(385, 255)
+INFO [2022-11-06][06:47:24] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:24] game src/main.rs:165:32 Window: Moved(451, 255)
+INFO [2022-11-06][06:47:24] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:24] game src/main.rs:165:32 Window: Moved(501, 245)
+INFO [2022-11-06][06:47:24] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:24] game src/main.rs:165:32 Window: Moved(512, 234)
+INFO [2022-11-06][06:47:24] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:24] game src/main.rs:165:32 Window: Moved(551, 225)
+INFO [2022-11-06][06:47:24] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:24] game src/main.rs:165:32 Window: Moved(557, 219)
+INFO [2022-11-06][06:47:24] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:24] game src/main.rs:165:32 Window: Moved(560, 211)
+INFO [2022-11-06][06:47:24] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:24] game src/main.rs:165:32 Window: Moved(563, 198)
+INFO [2022-11-06][06:47:24] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:24] game src/main.rs:165:32 Window: Moved(567, 190)
+INFO [2022-11-06][06:47:24] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:24] game src/main.rs:165:32 Window: Moved(572, 179)
+INFO [2022-11-06][06:47:24] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:24] game src/main.rs:165:32 Window: Moved(574, 170)
+INFO [2022-11-06][06:47:24] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:24] game src/main.rs:165:32 Window: Moved(576, 162)
+INFO [2022-11-06][06:47:24] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:24] game src/main.rs:165:32 Window: Moved(576, 159)
+INFO [2022-11-06][06:47:24] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:24] game src/main.rs:165:32 Window: Moved(576, 157)
+INFO [2022-11-06][06:47:24] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:24] game src/main.rs:165:32 Window: Moved(576, 156)
+INFO [2022-11-06][06:47:24] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:24] game src/main.rs:165:32 Window: Moved(574, 159)
+INFO [2022-11-06][06:47:24] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:24] game src/main.rs:165:32 Window: Moved(560, 165)
+INFO [2022-11-06][06:47:24] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:24] game src/main.rs:165:32 Window: Moved(534, 178)
+INFO [2022-11-06][06:47:24] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:24] game src/main.rs:165:32 Window: Moved(512, 186)
+INFO [2022-11-06][06:47:24] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:24] game src/main.rs:165:32 Window: Moved(488, 194)
+INFO [2022-11-06][06:47:24] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:24] game src/main.rs:165:32 Window: Moved(473, 196)
+INFO [2022-11-06][06:47:24] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:24] game src/main.rs:165:32 Window: Moved(467, 196)
+INFO [2022-11-06][06:47:25] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:25] game src/main.rs:165:32 Window: Enter
+INFO [2022-11-06][06:47:25] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:25] game src/main.rs:165:32 Window: Leave
+INFO [2022-11-06][06:47:26] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:26] game src/main.rs:165:32 Window: Enter
+INFO [2022-11-06][06:47:26] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:26] game src/main.rs:165:32 Window: Leave
+INFO [2022-11-06][06:47:26] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:26] game src/main.rs:165:32 Window: Enter
+INFO [2022-11-06][06:47:27] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:27] game src/main.rs:165:32 Window: Leave
+INFO [2022-11-06][06:47:27] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:27] game src/main.rs:165:32 Window: Enter
+INFO [2022-11-06][06:47:28] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:28] game src/main.rs:165:32 Window: Leave
+INFO [2022-11-06][06:47:28] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:28] game src/main.rs:165:32 Window: Enter
+INFO [2022-11-06][06:47:28] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:28] game src/main.rs:165:32 Window: Leave
+INFO [2022-11-06][06:47:29] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:29] game src/main.rs:165:32 Window: TakeFocus
+INFO [2022-11-06][06:47:29] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:29] game src/main.rs:165:32 Window: TakeFocus
+INFO [2022-11-06][06:47:29] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:29] game src/main.rs:165:32 Window: Enter
+INFO [2022-11-06][06:47:29] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:29] game src/main.rs:165:32 Window: Leave
+INFO [2022-11-06][06:47:30] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:30] game src/main.rs:165:32 Window: FocusLost
+INFO [2022-11-06][06:47:30] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:30] game src/main.rs:165:32 Window: Enter
+INFO [2022-11-06][06:47:31] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:31] game src/main.rs:165:32 Window: FocusGained
+DEBUG [2022-11-06][06:47:31] game src/main.rs:235:21 MouseButtonDown
+INFO [2022-11-06][06:47:31] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:31] game src/main.rs:165:32 Window: TakeFocus
+DEBUG [2022-11-06][06:47:31] game src/main.rs:247:21 MouseButtonUp
+INFO [2022-11-06][06:47:31] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:31] game src/main.rs:165:32 Window: Leave
+INFO [2022-11-06][06:47:32] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:32] game src/main.rs:165:32 Window: FocusLost
+INFO [2022-11-06][06:47:32] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:32] game src/main.rs:165:32 Window: Enter
+INFO [2022-11-06][06:47:32] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:32] game src/main.rs:165:32 Window: FocusGained
+DEBUG [2022-11-06][06:47:32] game src/main.rs:235:21 MouseButtonDown
+INFO [2022-11-06][06:47:32] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:32] game src/main.rs:165:32 Window: TakeFocus
+DEBUG [2022-11-06][06:47:33] game src/main.rs:247:21 MouseButtonUp
+INFO [2022-11-06][06:47:33] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:33] game src/main.rs:165:32 Window: Leave
+INFO [2022-11-06][06:47:33] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:33] game src/main.rs:165:32 Window: FocusLost
+INFO [2022-11-06][06:47:33] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:33] game src/main.rs:165:32 Window: Enter
+INFO [2022-11-06][06:47:34] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:34] game src/main.rs:165:32 Window: Leave
+INFO [2022-11-06][06:47:35] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:35] game src/main.rs:165:32 Window: FocusGained
+INFO [2022-11-06][06:47:35] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:35] game src/main.rs:165:32 Window: TakeFocus
+INFO [2022-11-06][06:47:35] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:35] game src/main.rs:165:32 Window: TakeFocus
+INFO [2022-11-06][06:47:35] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:35] game src/main.rs:163:29 Size changed to 853x480
+INFO [2022-11-06][06:47:35] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:35] game src/main.rs:148:29 Resizing to 853x480
+INFO [2022-11-06][06:47:35] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:35] game src/main.rs:165:32 Window: Exposed
+INFO [2022-11-06][06:47:35] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:35] game src/main.rs:163:29 Size changed to 850x477
+INFO [2022-11-06][06:47:35] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:35] game src/main.rs:148:29 Resizing to 850x477
+INFO [2022-11-06][06:47:35] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:35] game src/main.rs:165:32 Window: Exposed
+INFO [2022-11-06][06:47:35] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:35] game src/main.rs:163:29 Size changed to 845x470
+INFO [2022-11-06][06:47:35] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:35] game src/main.rs:148:29 Resizing to 845x470
+INFO [2022-11-06][06:47:35] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:35] game src/main.rs:165:32 Window: Exposed
+INFO [2022-11-06][06:47:35] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:35] game src/main.rs:163:29 Size changed to 833x458
+INFO [2022-11-06][06:47:35] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:35] game src/main.rs:148:29 Resizing to 833x458
+INFO [2022-11-06][06:47:35] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:35] game src/main.rs:165:32 Window: Exposed
+INFO [2022-11-06][06:47:35] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:35] game src/main.rs:163:29 Size changed to 819x447
+INFO [2022-11-06][06:47:35] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:35] game src/main.rs:148:29 Resizing to 819x447
+INFO [2022-11-06][06:47:35] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:35] game src/main.rs:165:32 Window: Exposed
+INFO [2022-11-06][06:47:35] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:35] game src/main.rs:163:29 Size changed to 797x434
+INFO [2022-11-06][06:47:35] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:35] game src/main.rs:148:29 Resizing to 797x434
+INFO [2022-11-06][06:47:35] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:35] game src/main.rs:165:32 Window: Exposed
+INFO [2022-11-06][06:47:35] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:35] game src/main.rs:163:29 Size changed to 781x427
+INFO [2022-11-06][06:47:35] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:35] game src/main.rs:148:29 Resizing to 781x427
+INFO [2022-11-06][06:47:35] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:35] game src/main.rs:165:32 Window: Exposed
+INFO [2022-11-06][06:47:35] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:35] game src/main.rs:163:29 Size changed to 770x423
+INFO [2022-11-06][06:47:35] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:35] game src/main.rs:148:29 Resizing to 770x423
+INFO [2022-11-06][06:47:35] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:35] game src/main.rs:165:32 Window: Exposed
+INFO [2022-11-06][06:47:35] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:35] game src/main.rs:163:29 Size changed to 766x423
+INFO [2022-11-06][06:47:35] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:35] game src/main.rs:148:29 Resizing to 766x423
+INFO [2022-11-06][06:47:35] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:35] game src/main.rs:165:32 Window: Exposed
+INFO [2022-11-06][06:47:35] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:35] game src/main.rs:163:29 Size changed to 761x422
+INFO [2022-11-06][06:47:35] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:35] game src/main.rs:148:29 Resizing to 761x422
+INFO [2022-11-06][06:47:35] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:35] game src/main.rs:165:32 Window: Exposed
+INFO [2022-11-06][06:47:35] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:35] game src/main.rs:163:29 Size changed to 758x421
+INFO [2022-11-06][06:47:35] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:35] game src/main.rs:148:29 Resizing to 758x421
+INFO [2022-11-06][06:47:35] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:35] game src/main.rs:165:32 Window: Exposed
+INFO [2022-11-06][06:47:35] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:35] game src/main.rs:163:29 Size changed to 757x421
+INFO [2022-11-06][06:47:35] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:35] game src/main.rs:148:29 Resizing to 757x421
+INFO [2022-11-06][06:47:35] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:35] game src/main.rs:165:32 Window: Exposed
+INFO [2022-11-06][06:47:35] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:35] game src/main.rs:163:29 Size changed to 752x421
+INFO [2022-11-06][06:47:35] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:35] game src/main.rs:148:29 Resizing to 752x421
+INFO [2022-11-06][06:47:35] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:35] game src/main.rs:165:32 Window: Exposed
+INFO [2022-11-06][06:47:35] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:35] game src/main.rs:163:29 Size changed to 746x422
+INFO [2022-11-06][06:47:35] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:35] game src/main.rs:148:29 Resizing to 746x422
+INFO [2022-11-06][06:47:35] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:35] game src/main.rs:165:32 Window: Exposed
+INFO [2022-11-06][06:47:35] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:35] game src/main.rs:163:29 Size changed to 733x431
+INFO [2022-11-06][06:47:35] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:35] game src/main.rs:148:29 Resizing to 733x431
+INFO [2022-11-06][06:47:35] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:35] game src/main.rs:165:32 Window: Exposed
+INFO [2022-11-06][06:47:35] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:35] game src/main.rs:163:29 Size changed to 714x444
+INFO [2022-11-06][06:47:35] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:35] game src/main.rs:148:29 Resizing to 714x444
+INFO [2022-11-06][06:47:35] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:35] game src/main.rs:165:32 Window: Exposed
+INFO [2022-11-06][06:47:35] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:35] game src/main.rs:163:29 Size changed to 710x447
+INFO [2022-11-06][06:47:35] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:35] game src/main.rs:148:29 Resizing to 710x447
+INFO [2022-11-06][06:47:35] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:35] game src/main.rs:165:32 Window: Exposed
+INFO [2022-11-06][06:47:35] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:35] game src/main.rs:163:29 Size changed to 694x459
+INFO [2022-11-06][06:47:35] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:35] game src/main.rs:148:29 Resizing to 694x459
+INFO [2022-11-06][06:47:35] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:35] game src/main.rs:165:32 Window: Exposed
+INFO [2022-11-06][06:47:35] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:35] game src/main.rs:163:29 Size changed to 689x463
+INFO [2022-11-06][06:47:35] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:35] game src/main.rs:148:29 Resizing to 689x463
+INFO [2022-11-06][06:47:35] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:35] game src/main.rs:165:32 Window: Exposed
+INFO [2022-11-06][06:47:35] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:35] game src/main.rs:163:29 Size changed to 680x472
+INFO [2022-11-06][06:47:35] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:35] game src/main.rs:148:29 Resizing to 680x472
+INFO [2022-11-06][06:47:35] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:35] game src/main.rs:165:32 Window: Exposed
+INFO [2022-11-06][06:47:36] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:36] game src/main.rs:163:29 Size changed to 675x479
+INFO [2022-11-06][06:47:36] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:36] game src/main.rs:148:29 Resizing to 675x479
+INFO [2022-11-06][06:47:36] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:36] game src/main.rs:165:32 Window: Exposed
+INFO [2022-11-06][06:47:36] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:36] game src/main.rs:163:29 Size changed to 663x489
+INFO [2022-11-06][06:47:36] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:36] game src/main.rs:148:29 Resizing to 663x489
+INFO [2022-11-06][06:47:36] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:36] game src/main.rs:165:32 Window: Exposed
+INFO [2022-11-06][06:47:36] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:36] game src/main.rs:163:29 Size changed to 660x492
+INFO [2022-11-06][06:47:36] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:36] game src/main.rs:148:29 Resizing to 660x492
+INFO [2022-11-06][06:47:36] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:36] game src/main.rs:165:32 Window: Exposed
+INFO [2022-11-06][06:47:36] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:36] game src/main.rs:163:29 Size changed to 649x498
+INFO [2022-11-06][06:47:36] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:36] game src/main.rs:148:29 Resizing to 649x498
+INFO [2022-11-06][06:47:36] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:36] game src/main.rs:165:32 Window: Exposed
+INFO [2022-11-06][06:47:36] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:36] game src/main.rs:163:29 Size changed to 645x500
+INFO [2022-11-06][06:47:36] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:36] game src/main.rs:148:29 Resizing to 645x500
+INFO [2022-11-06][06:47:36] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:36] game src/main.rs:165:32 Window: Exposed
+INFO [2022-11-06][06:47:36] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:36] game src/main.rs:163:29 Size changed to 627x508
+INFO [2022-11-06][06:47:36] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:36] game src/main.rs:148:29 Resizing to 627x508
+INFO [2022-11-06][06:47:36] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:36] game src/main.rs:165:32 Window: Exposed
+INFO [2022-11-06][06:47:36] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:36] game src/main.rs:163:29 Size changed to 625x509
+INFO [2022-11-06][06:47:36] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:36] game src/main.rs:148:29 Resizing to 625x509
+INFO [2022-11-06][06:47:36] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:36] game src/main.rs:165:32 Window: Exposed
+INFO [2022-11-06][06:47:36] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:36] game src/main.rs:163:29 Size changed to 631x509
+INFO [2022-11-06][06:47:36] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:36] game src/main.rs:148:29 Resizing to 631x509
+INFO [2022-11-06][06:47:36] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:36] game src/main.rs:165:32 Window: Exposed
+INFO [2022-11-06][06:47:36] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:36] game src/main.rs:163:29 Size changed to 650x509
+INFO [2022-11-06][06:47:36] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:36] game src/main.rs:148:29 Resizing to 650x509
+INFO [2022-11-06][06:47:36] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:36] game src/main.rs:165:32 Window: Exposed
+INFO [2022-11-06][06:47:36] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:36] game src/main.rs:163:29 Size changed to 669x503
+INFO [2022-11-06][06:47:36] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:36] game src/main.rs:148:29 Resizing to 669x503
+INFO [2022-11-06][06:47:36] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:36] game src/main.rs:165:32 Window: Exposed
+INFO [2022-11-06][06:47:36] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:36] game src/main.rs:163:29 Size changed to 707x499
+INFO [2022-11-06][06:47:36] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:36] game src/main.rs:148:29 Resizing to 707x499
+INFO [2022-11-06][06:47:36] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:36] game src/main.rs:165:32 Window: Exposed
+INFO [2022-11-06][06:47:36] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:36] game src/main.rs:163:29 Size changed to 710x498
+INFO [2022-11-06][06:47:36] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:36] game src/main.rs:148:29 Resizing to 710x498
+INFO [2022-11-06][06:47:36] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:36] game src/main.rs:165:32 Window: Exposed
+INFO [2022-11-06][06:47:36] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:36] game src/main.rs:163:29 Size changed to 710x492
+INFO [2022-11-06][06:47:36] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:36] game src/main.rs:148:29 Resizing to 710x492
+INFO [2022-11-06][06:47:36] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:36] game src/main.rs:165:32 Window: Exposed
+INFO [2022-11-06][06:47:36] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:36] game src/main.rs:163:29 Size changed to 713x474
+INFO [2022-11-06][06:47:36] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:36] game src/main.rs:148:29 Resizing to 713x474
+INFO [2022-11-06][06:47:36] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:36] game src/main.rs:165:32 Window: Exposed
+INFO [2022-11-06][06:47:36] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:36] game src/main.rs:163:29 Size changed to 716x446
+INFO [2022-11-06][06:47:36] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:36] game src/main.rs:148:29 Resizing to 716x446
+INFO [2022-11-06][06:47:36] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:36] game src/main.rs:165:32 Window: Exposed
+INFO [2022-11-06][06:47:37] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:37] game src/main.rs:163:29 Size changed to 716x442
+INFO [2022-11-06][06:47:37] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:37] game src/main.rs:148:29 Resizing to 716x442
+INFO [2022-11-06][06:47:37] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:37] game src/main.rs:165:32 Window: Exposed
+INFO [2022-11-06][06:47:37] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:37] game src/main.rs:163:29 Size changed to 716x439
+INFO [2022-11-06][06:47:37] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:37] game src/main.rs:148:29 Resizing to 716x439
+INFO [2022-11-06][06:47:37] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:37] game src/main.rs:165:32 Window: Exposed
+INFO [2022-11-06][06:47:37] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:37] game src/main.rs:163:29 Size changed to 717x440
+INFO [2022-11-06][06:47:37] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:37] game src/main.rs:148:29 Resizing to 717x440
+INFO [2022-11-06][06:47:37] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:37] game src/main.rs:165:32 Window: Exposed
+INFO [2022-11-06][06:47:37] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:37] game src/main.rs:163:29 Size changed to 733x457
+INFO [2022-11-06][06:47:37] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:37] game src/main.rs:148:29 Resizing to 733x457
+INFO [2022-11-06][06:47:37] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:37] game src/main.rs:165:32 Window: Exposed
+INFO [2022-11-06][06:47:37] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:37] game src/main.rs:163:29 Size changed to 742x463
+INFO [2022-11-06][06:47:37] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:37] game src/main.rs:148:29 Resizing to 742x463
+INFO [2022-11-06][06:47:37] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:37] game src/main.rs:165:32 Window: Exposed
+INFO [2022-11-06][06:47:37] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:37] game src/main.rs:163:29 Size changed to 791x475
+INFO [2022-11-06][06:47:37] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:37] game src/main.rs:148:29 Resizing to 791x475
+INFO [2022-11-06][06:47:37] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:37] game src/main.rs:165:32 Window: Exposed
+INFO [2022-11-06][06:47:37] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:37] game src/main.rs:163:29 Size changed to 806x479
+INFO [2022-11-06][06:47:37] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:37] game src/main.rs:148:29 Resizing to 806x479
+INFO [2022-11-06][06:47:37] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:37] game src/main.rs:165:32 Window: Exposed
+INFO [2022-11-06][06:47:37] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:37] game src/main.rs:163:29 Size changed to 841x483
+INFO [2022-11-06][06:47:37] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:37] game src/main.rs:148:29 Resizing to 841x483
+INFO [2022-11-06][06:47:37] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:37] game src/main.rs:165:32 Window: Exposed
+INFO [2022-11-06][06:47:37] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:37] game src/main.rs:165:32 Window: Enter
+INFO [2022-11-06][06:47:38] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:38] game src/main.rs:165:32 Window: Leave
+INFO [2022-11-06][06:47:38] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:38] game src/main.rs:165:32 Window: FocusLost
+INFO [2022-11-06][06:47:39] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:39] game src/main.rs:165:32 Window: Enter
+INFO [2022-11-06][06:47:39] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:39] game src/main.rs:165:32 Window: FocusGained
+INFO [2022-11-06][06:47:39] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:39] game src/main.rs:165:32 Window: TakeFocus
+INFO [2022-11-06][06:47:39] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:39] game src/main.rs:165:32 Window: Leave
+INFO [2022-11-06][06:47:40] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:40] game src/main.rs:165:32 Window: Enter
+INFO [2022-11-06][06:47:40] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:40] game src/main.rs:165:32 Window: Leave
+INFO [2022-11-06][06:47:41] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:41] game src/main.rs:165:32 Window: TakeFocus
+INFO [2022-11-06][06:47:41] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:41] game src/main.rs:165:32 Window: TakeFocus
+INFO [2022-11-06][06:47:42] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:42] game src/main.rs:165:32 Window: TakeFocus
+INFO [2022-11-06][06:47:42] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:42] game src/main.rs:165:32 Window: TakeFocus
+INFO [2022-11-06][06:47:42] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:42] game src/main.rs:165:32 Window: TakeFocus
+INFO [2022-11-06][06:47:42] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:42] game src/main.rs:165:32 Window: TakeFocus
+INFO [2022-11-06][06:47:42] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:42] game src/main.rs:165:32 Window: TakeFocus
+INFO [2022-11-06][06:47:43] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:43] game src/main.rs:165:32 Window: TakeFocus
+INFO [2022-11-06][06:47:43] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:43] game src/main.rs:165:32 Window: TakeFocus
+INFO [2022-11-06][06:47:44] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:44] game src/main.rs:165:32 Window: TakeFocus
+INFO [2022-11-06][06:47:44] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:44] game src/main.rs:165:32 Window: TakeFocus
+INFO [2022-11-06][06:47:45] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:45] game src/main.rs:165:32 Window: TakeFocus
+INFO [2022-11-06][06:47:45] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:45] game src/main.rs:165:32 Window: TakeFocus
+INFO [2022-11-06][06:47:45] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:45] game src/main.rs:165:32 Window: TakeFocus
+INFO [2022-11-06][06:47:45] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:45] game src/main.rs:165:32 Window: TakeFocus
+INFO [2022-11-06][06:47:46] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:46] game src/main.rs:165:32 Window: TakeFocus
+INFO [2022-11-06][06:47:46] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:46] game src/main.rs:165:32 Window: TakeFocus
+INFO [2022-11-06][06:47:46] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:46] game src/main.rs:165:32 Window: TakeFocus
+INFO [2022-11-06][06:47:46] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:46] game src/main.rs:165:32 Window: Enter
+INFO [2022-11-06][06:47:47] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:47] game src/main.rs:165:32 Window: Leave
+INFO [2022-11-06][06:47:48] game src/main.rs:145:21 Window Event triggered
+INFO [2022-11-06][06:47:48] game src/main.rs:165:32 Window: FocusLost
