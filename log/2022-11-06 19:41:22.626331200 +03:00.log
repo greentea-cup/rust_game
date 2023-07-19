@@ -1,8 +1,0 @@
-ERROR [2022-11-06][19:41:22] game src/main.rs:234:17 Cannot create vertex shader: 0:18(2): error: `color' undeclared
-0:18(2): error: value of type vec3 cannot be assigned to variable of type error
-
-ERROR [2022-11-06][19:41:22] game src/main.rs:234:17 Cannot create fragment shader: 0:5(22): error: `color' undeclared
-0:5(22): error: operands to arithmetic operators must be numeric
-0:5(17): error: cannot construct `vec4' from a non-numeric data type
-
-ERROR [2022-11-06][19:41:22] game src/main.rs:258:9 Cannot link program: error: linking with uncompiled/unspecialized shadererror: linking with uncompiled/unspecialized shader
