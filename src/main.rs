@@ -9,8 +9,6 @@ fn main() {
 struct GameState {
     position: glm::Vec3,
     rotation: glm::Vec2,
-    mouse: sdl2::mouse::MouseUtil,
-    window: sdl2::video::Window,
     captured: bool,
 }
 
@@ -93,11 +91,7 @@ unsafe fn main0() {
         .indices
         .iter()
         .map(|i| *i as usize)
-        .flat_map(|i| [3 * i, 3 * i + 1, 3 * i + 2])
-        .map(|i| cube.positions[i])
-        //.flat_map(
-        //    |i| [cube.positions[3*i], cube.positions[3*i+1], cube.positions[3*i+2]]
-        //)
+        .flat_map(|i| [cube.positions[3*i], cube.positions[3*i+1], cube.positions[3*i+2]])
         .collect::<Vec<_>>();
     println!("cube.indices {:?} -- {}", cube.indices, cube.indices.len());
     println!(
@@ -142,20 +136,18 @@ unsafe fn main0() {
     gl.bind_buffer(glow::ARRAY_BUFFER, Some(uv_buf));
     gl.buffer_data_u8_slice(glow::ARRAY_BUFFER, slice_as_u8(cube_uv), glow::STATIC_DRAW);
     // NOTE
+    let mut culling = true;
     gl.enable(glow::CULL_FACE);
-    // gl.enable(glow::DEPTH_TEST);
+    gl.enable(glow::DEPTH_TEST);
     gl.depth_func(glow::LESS);
 
     let mut state = GameState {
         position: glm::vec3(0., 0., -4.5),
         rotation: glm::vec2(0., 0.),
-        // NOTE
-        mouse,
-        window,
         captured: true,
     };
 
-    state.mouse.set_relative_mouse_mode(true);
+    mouse.set_relative_mouse_mode(true);
 
     let mut prev_time = 0.0;
     let mut current_time;
@@ -201,7 +193,7 @@ unsafe fn main0() {
         gl.vertex_attrib_pointer_f32(1, 2, glow::FLOAT, false, 0, 0);
         // draw and release
         gl.draw_arrays(glow::TRIANGLES, 0, (cube_triangles.len() / 3) as i32);
-        state.window.gl_swap_window();
+        window.gl_swap_window();
         gl.disable_vertex_attrib_array(0);
         gl.disable_vertex_attrib_array(1);
 
@@ -219,11 +211,11 @@ unsafe fn main0() {
                     scancode: Some(Scancode::Escape),
                     ..
                 } => {
-                    let (w, h) = state.window.size();
+                    let (w, h) = window.size();
                     let (w2, h2) = (w as i32 / 2, h as i32 / 2);
-                    state.mouse.warp_mouse_in_window(&state.window, w2, h2);
+                    mouse.warp_mouse_in_window(&window, w2, h2);
                     state.captured = !state.captured;
-                    state.mouse.set_relative_mouse_mode(state.captured);
+                    mouse.set_relative_mouse_mode(state.captured);
                 },
                 Event::MouseMotion { xrel, yrel, .. } if state.captured => {
                     // xrel + == right
@@ -236,18 +228,7 @@ unsafe fn main0() {
                     repeat: false,
                     ..
                 } if state.captured => {
-                    /*println!("{:?}", event);
-                    let position_diff = match scancode {
-                        Scancode::W => front,
-                        Scancode::A => -right,
-                        Scancode::S => -front,
-                        Scancode::D => right,
-                        Scancode::Space => VEC3_UP,
-                        Scancode::LShift => -VEC3_UP,
-                        _ => continue
-                    };
-                    state.position = state.position + position_diff * delta_time * speed;*/
-                    match scancode {
+                   match scancode {
                         // x+ forward
                         // y+ up
                         // z+ right
@@ -257,6 +238,17 @@ unsafe fn main0() {
                         Scancode::D => wasd.z += 1,
                         Scancode::Space => wasd.y += 1,
                         Scancode::LShift => wasd.y -= 1,
+                        Scancode::G => {
+                            culling = !culling;
+                            if culling {
+                                gl.enable(glow::CULL_FACE);
+                                println!("Culling on");
+                            }
+                            else {
+                                gl.disable(glow::CULL_FACE);
+                                println!("Culling off");
+                            }
+                        },
                         _ => handle_event(event, &mut state),
                     }
                 },
@@ -266,7 +258,7 @@ unsafe fn main0() {
                     ..
                 } if state.captured => {
                     // println!("{:?}", event);
-                    // inverted KeyDowm
+                    // inverted KeyDown
                     match scancode {
                         Scancode::W => wasd.x -= 1,
                         Scancode::A => wasd.z += 1,
