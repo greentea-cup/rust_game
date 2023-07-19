@@ -7,7 +7,10 @@ edition = "2021"
 
 [dependencies]
 chrono = "0.4.22"
-fern = "0.6.1"
+glm = "0.2.3"
+# fern = "0.6.1"
 glow = { version = ">=0.11.2" }
+image = { version = "0.24.6", default-features = false, features = ["png"] }
 log = "0.4.17"
 sdl2 = { version = "0.35" }
+tobj = { version = "4.0.0", features = ["reordering"] }
