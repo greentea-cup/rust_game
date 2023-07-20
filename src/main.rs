@@ -1,6 +1,6 @@
 use glmc::*;
 use glow::HasContext;
-use tobj::load_obj;
+use tobj::{load_obj, Material, Model};
 
 fn main() {
     unsafe { main0() }
@@ -19,7 +19,7 @@ unsafe fn main0() {
     let aspect_ratio = width as f32 / height as f32;
     let fov = glm::radians(45.);
     // sdl2 and gl context
-    let (gl, window, mut event_loop, _gl_context) =
+    let (gl, mut window, mut event_loop, _gl_context) =
         init_window(width, height).expect("Cannot initialize window");
     let mouse = window.subsystem().sdl().mouse();
     // shaders
@@ -39,102 +39,37 @@ unsafe fn main0() {
     let time_u = gl.get_uniform_location(program, "time");
     let sampler_u = gl.get_uniform_location(program, "sampler");
 
-    // send data to buffer
-    let (cube, materials) = {
-        let (models, materials) =
-            load_obj("./data/objects/cube.obj", &tobj::LoadOptions::default()).unwrap();
+    // generate meshes and sort them
+    // TODO: atlases and batching
+    let (models, materials) = {
+        let (models, materials) = load_obj(
+            "./data/objects/sample.obj",
+            &tobj::LoadOptions {
+                triangulate: true,
+                ..Default::default()
+            },
+        )
+        .unwrap();
         let materials = materials.unwrap();
         (models, materials)
     };
-    let cube = &cube[0].mesh;
-    let texture = &materials[0].diffuse_texture;
 
-    let cube_texture = {
-        if let Some(tx_path) = texture {
-            let tx = Some(gl.create_texture().unwrap());
-            gl.bind_texture(glow::TEXTURE_2D, tx);
-            let txr_img = image::load(
-                std::io::BufReader::new(std::fs::File::open(tx_path).unwrap()),
-                image::ImageFormat::Png,
-            )
-            .unwrap()
-            .into_rgb8();
-            let txr_data = txr_img.as_flat_samples().samples;
-            let (w, h) = (txr_img.width() as i32, txr_img.height() as i32);
-            gl.tex_image_2d(
-                glow::TEXTURE_2D,
-                0,
-                glow::RGB as i32,
-                w,
-                h,
-                0,
-                glow::RGB,
-                glow::UNSIGNED_BYTE,
-                Some(txr_data),
-            );
-            gl.tex_parameter_i32(
-                glow::TEXTURE_2D,
-                glow::TEXTURE_MAG_FILTER,
-                glow::NEAREST as i32,
-            );
-            gl.tex_parameter_i32(
-                glow::TEXTURE_2D,
-                glow::TEXTURE_MIN_FILTER,
-                glow::NEAREST as i32,
-            );
-            tx
-        } else {
-            None
-        }
-    };
-    let cube_triangles: &[f32] = &cube
-        .indices
-        .iter()
-        .map(|i| *i as usize)
-        .flat_map(|i| [cube.positions[3*i], cube.positions[3*i+1], cube.positions[3*i+2]])
-        .collect::<Vec<_>>();
-    println!("cube.indices {:?} -- {}", cube.indices, cube.indices.len());
-    println!(
-        "cube.positions {:?} -- {}",
-        cube.positions,
-        cube.positions.len()
-    );
-    println!(
-        "cube_triangles {:?} -- {}",
-        cube_triangles,
-        cube_triangles.len()
-    );
-    let cube_uv: &[f32] = &cube
-        .texcoord_indices
-        .iter()
-        .map(|&i| i as usize)
-        .flat_map(
-            // NOTE: u, 1-v opengl-tutorial says it's DirectX format, but it also works
-            // with blender cube, so assume all models are in this format
-            |i| [cube.texcoords[2 * i], 1.0 - cube.texcoords[2 * i + 1]],
-        )
-        .collect::<Vec<_>>();
-    println!(
-        "cube.texcoords {:?} -- {}",
-        cube.texcoords,
-        cube.texcoords.len()
-    );
-    println!(
-        "cube.texcoord_indices {:?} -- {}",
-        cube.texcoord_indices,
-        cube.texcoord_indices.len()
-    );
-    println!("cube_uv {:?} -- {}", cube_uv, cube_uv.len());
+    let textures = load_textures(&gl, &materials);
+    let baked = bake_meshes(models);
+
     gl.bind_vertex_array(Some(vao));
-
     gl.bind_buffer(glow::ARRAY_BUFFER, Some(vbo));
     gl.buffer_data_u8_slice(
         glow::ARRAY_BUFFER,
-        slice_as_u8(cube_triangles),
+        slice_as_u8(&baked.vertices),
         glow::STATIC_DRAW,
     );
     gl.bind_buffer(glow::ARRAY_BUFFER, Some(uv_buf));
-    gl.buffer_data_u8_slice(glow::ARRAY_BUFFER, slice_as_u8(cube_uv), glow::STATIC_DRAW);
+    gl.buffer_data_u8_slice(
+        glow::ARRAY_BUFFER,
+        slice_as_u8(&baked.uvs),
+        glow::STATIC_DRAW,
+    );
     // NOTE
     let mut culling = true;
     gl.enable(glow::CULL_FACE);
@@ -154,25 +89,10 @@ unsafe fn main0() {
     let mut delta_time;
 
     let mut wasd = glm::ivec3(0, 0, 0);
+    let mut fast = false;
 
     'render: loop {
-        let (mvp_mat, right, front) = {
-            let z_near = 0.1;
-            let z_far = 100.0;
-            let projection = glm::ext::perspective(fov, aspect_ratio, z_near, z_far);
-
-            let (cx, sx) = (glm::cos(state.rotation.x), glm::sin(state.rotation.x));
-            let (cy, sy) = (glm::cos(state.rotation.y), glm::sin(state.rotation.y));
-            let direction = glm::vec3(cy * sx, sy, cy * cx);
-            let right_angle = state.rotation.x - std::f32::consts::FRAC_PI_2;
-            let right = glm::vec3(glm::sin(right_angle), 0.0, glm::cos(right_angle));
-            let up = glm::cross(right, direction);
-            let front = -glm::cross(right, glm::vec3(0.0, 1.0, 0.0));
-
-            let view = glm::ext::look_at(state.position, state.position + direction, up);
-            let model = MAT4_ONE;
-            (projection * view * model, right, front)
-        };
+        let (mvp_mat, right, front) = get_mvp_rf(state.position, state.rotation, fov, aspect_ratio);
 
         gl.clear(glow::COLOR_BUFFER_BIT | glow::DEPTH_BUFFER_BIT);
 
@@ -180,10 +100,6 @@ unsafe fn main0() {
         // pass data to shaders
         gl.uniform_matrix_4_f32_slice(mvp_u.as_ref(), false, mat4_as_vec(mvp_mat));
         gl.uniform_1_f32(time_u.as_ref(), start.elapsed().unwrap().as_secs_f32());
-
-        gl.active_texture(glow::TEXTURE0);
-        gl.bind_texture(glow::TEXTURE_2D, cube_texture);
-        gl.uniform_1_i32(sampler_u.as_ref(), 0);
         // enable buffers
         gl.enable_vertex_attrib_array(0);
         gl.bind_buffer(glow::ARRAY_BUFFER, Some(vbo));
@@ -191,14 +107,24 @@ unsafe fn main0() {
         gl.enable_vertex_attrib_array(1);
         gl.bind_buffer(glow::ARRAY_BUFFER, Some(uv_buf));
         gl.vertex_attrib_pointer_f32(1, 2, glow::FLOAT, false, 0, 0);
-        // draw and release
-        gl.draw_arrays(glow::TRIANGLES, 0, (cube_triangles.len() / 3) as i32);
+
+        // NOTE: max simultaneous textures is 32
+        for (i, &tx) in textures.iter().enumerate() {
+            gl.uniform_1_i32(sampler_u.as_ref(), i as i32);
+            gl.active_texture(glow::TEXTURE0 + (i as u32));
+            gl.bind_texture(glow::TEXTURE_2D, tx);
+            gl.draw_arrays(glow::TRIANGLES, baked.offsets[i], baked.lengths[i]);
+        }
+        // blanks is skipped for now
+        // finish drawing
         window.gl_swap_window();
         gl.disable_vertex_attrib_array(0);
         gl.disable_vertex_attrib_array(1);
 
         let mouse_speed: f32 = 0.005;
-        let speed: f32 = 2.0;
+        let speed_fast: f32 = 5.0;
+        let speed_slow: f32 = 2.0;
+        let speed = if fast {speed_fast} else {speed_slow};
         current_time = start.elapsed().unwrap().as_secs_f32();
         delta_time = current_time - prev_time;
 
@@ -211,6 +137,10 @@ unsafe fn main0() {
                     scancode: Some(Scancode::Escape),
                     ..
                 } => {
+                    wasd.x = 0;
+                    wasd.y = 0;
+                    wasd.z = 0;
+                    fast = false;
                     let (w, h) = window.size();
                     let (w2, h2) = (w as i32 / 2, h as i32 / 2);
                     mouse.warp_mouse_in_window(&window, w2, h2);
@@ -228,7 +158,7 @@ unsafe fn main0() {
                     repeat: false,
                     ..
                 } if state.captured => {
-                   match scancode {
+                    match scancode {
                         // x+ forward
                         // y+ up
                         // z+ right
@@ -238,13 +168,13 @@ unsafe fn main0() {
                         Scancode::D => wasd.z += 1,
                         Scancode::Space => wasd.y += 1,
                         Scancode::LShift => wasd.y -= 1,
+                        Scancode::Tab => fast = true,
                         Scancode::G => {
                             culling = !culling;
                             if culling {
                                 gl.enable(glow::CULL_FACE);
                                 println!("Culling on");
-                            }
-                            else {
+                            } else {
                                 gl.disable(glow::CULL_FACE);
                                 println!("Culling off");
                             }
@@ -257,15 +187,15 @@ unsafe fn main0() {
                     repeat: false,
                     ..
                 } if state.captured => {
-                    // println!("{:?}", event);
-                    // inverted KeyDown
                     match scancode {
+                        // inverted KeyDown
                         Scancode::W => wasd.x -= 1,
                         Scancode::A => wasd.z += 1,
                         Scancode::S => wasd.x += 1,
                         Scancode::D => wasd.z -= 1,
                         Scancode::Space => wasd.y -= 1,
                         Scancode::LShift => wasd.y += 1,
+                        Scancode::Tab => fast = false,
                         _ => handle_event(event, &mut state),
                     }
                 },
@@ -283,31 +213,173 @@ fn handle_event(event: sdl2::event::Event, state: &mut GameState) {
     use sdl2::keyboard::Scancode;
 
     match event {
-        Event::MouseWheel {
-            ..
-            // timestamp, window_id, which, x, y, direction
-        } => {
-            println!("{:?}", event);
-        },
+        // stub for rust-analyzer
+        Event::Quit { .. } => {},
         Event::KeyDown {
-            scancode: Some(Scancode::P), ..
-        } => {
-            println!("Position: {:?}", state.position);
-        },
-        Event::KeyDown {
-            // timestamp, window_id, keycode,
-            // scancode, //, keymod
-            repeat: false,
+            scancode: Some(Scancode::P),
             ..
         } => {
-            // println!("{:?}", event);
+            let glm::Vector3 { x, y, z } = state.position;
+            println!("Position: {} {} {}", x, y, z);
         },
-        _ => {}
+        _ => {},
     }
 }
 
-type GlowShaderType = u32;
+fn get_mvp_rf(
+    position: glm::Vec3,
+    rotation: glm::Vec2,
+    fov: f32,
+    aspect_ratio: f32,
+) -> (glm::Mat4, glm::Vec3, glm::Vec3) {
+    let z_near = 0.1;
+    let z_far = 100.0;
+    let projection = glm::ext::perspective(fov, aspect_ratio, z_near, z_far);
 
+    let (cx, sx) = (glm::cos(rotation.x), glm::sin(rotation.x));
+    let (cy, sy) = (glm::cos(rotation.y), glm::sin(rotation.y));
+    let direction = glm::vec3(cy * sx, sy, cy * cx);
+    let right_angle = rotation.x - std::f32::consts::FRAC_PI_2;
+    let right = glm::vec3(glm::sin(right_angle), 0.0, glm::cos(right_angle));
+    let up = glm::cross(right, direction);
+    let front = -glm::cross(right, glm::vec3(0.0, 1.0, 0.0));
+
+    let view = glm::ext::look_at(position, position + direction, up);
+    let model = MAT4_ONE;
+    (projection * view * model, right, front)
+}
+
+struct BakedMeshes {
+    vertices: Vec<f32>,
+    offsets: Vec<i32>,
+    lengths: Vec<i32>,
+    uvs: Vec<f32>,
+}
+unsafe fn bake_meshes(models: Vec<Model>) -> BakedMeshes {
+    let mut models = models
+        .iter()
+        .filter(|m| {
+            if m.mesh.material_id.is_some() {
+                true
+            } else {
+                println!("Skipped model without material_id: {}", m.name);
+                false
+            }
+        })
+        .collect::<Vec<_>>();
+    models.sort_by_cached_key(|m| m.mesh.material_id);
+    let mut vertices = Vec::new();
+    let mut offsets = Vec::new();
+    let mut lengths = Vec::new();
+    let mut uvs = Vec::new();
+    // NOTE: models without material_id is ignored for now
+    let mut offset = 0;
+    let mut length = 0;
+    let mut prev_mat_id = models[0].mesh.material_id.unwrap();
+
+    for model in models {
+        println!("Loaded model {}", model.name);
+        let m = &model.mesh;
+        let mat_id = m.material_id.unwrap();
+        if mat_id != prev_mat_id {
+            offsets.push(offset as i32);
+            lengths.push(length as i32);
+            offset += length;
+            length = 0;
+            prev_mat_id = mat_id;
+        }
+        vertices.append(
+            &mut m
+                .indices
+                .iter()
+                .map(|&i| i as usize)
+                .flat_map(|i| {
+                    [
+                        m.positions[i * 3],
+                        m.positions[i * 3 + 1],
+                        m.positions[i * 3 + 2],
+                    ]
+                })
+                .collect::<Vec<_>>(),
+        );
+        uvs.append(
+            &mut m
+                .texcoord_indices
+                .iter()
+                .map(|&i| i as usize)
+                .flat_map(
+                    // NOTE: u, 1-v opengl-tutorial says it's DirectX format, but it also works
+                    // with blender cube, so assume all models are in this format
+                    |i| [m.texcoords[2 * i], 1.0 - m.texcoords[2 * i + 1]],
+                )
+                .collect::<Vec<_>>(),
+        );
+        length += m.indices.len();
+    }
+    offsets.push(offset as i32);
+    lengths.push(length as i32);
+    BakedMeshes {
+        vertices,
+        offsets,
+        lengths,
+        uvs,
+    }
+}
+
+unsafe fn load_textures(
+    gl: &glow::Context,
+    materials: &Vec<Material>,
+) -> Vec<Option<glow::NativeTexture>> {
+    use std::fs::File;
+    use std::io::BufReader;
+    let mut textures = Vec::new();
+    for tx0 in materials {
+        if tx0.diffuse_texture.is_none() {
+            textures.push(None);
+            continue;
+        }
+        let tx_path = tx0.diffuse_texture.as_ref().unwrap();
+        // NOTE consider safety
+        let tx = Some(gl.create_texture().unwrap());
+        gl.bind_texture(glow::TEXTURE_2D, tx);
+        let txr_img = image::load(
+            BufReader::new(File::open(tx_path).unwrap()),
+            image::ImageFormat::Png,
+        )
+        .unwrap()
+        .into_rgba8();
+        let txr_data = txr_img.as_flat_samples().samples;
+        let (w, h) = (txr_img.width() as i32, txr_img.height() as i32);
+        gl.tex_image_2d(
+            glow::TEXTURE_2D,
+            0, // level of detail TODO: mipmapping
+            glow::RGB as i32,
+            w,
+            h,
+            0, // border. literally must be zero. always
+            glow::RGBA,
+            glow::UNSIGNED_BYTE,
+            Some(txr_data),
+        );
+        // NOTE: releated to mipmapping
+        // see glTexParameter#GL_TEXTURE_MIN_FILTER, glTexParameter#GL_TEXTURE_MAG_FILTER
+        // (khronos)
+        gl.tex_parameter_i32(
+            glow::TEXTURE_2D,
+            glow::TEXTURE_MAG_FILTER,
+            glow::NEAREST as i32,
+        );
+        gl.tex_parameter_i32(
+            glow::TEXTURE_2D,
+            glow::TEXTURE_MIN_FILTER,
+            glow::NEAREST as i32,
+        );
+        textures.push(tx);
+    }
+    textures
+}
+
+type GlowShaderType = u32;
 unsafe fn load_shaders(
     gl: &glow::Context,
     shaders: &[(GlowShaderType, &std::path::Path)],
