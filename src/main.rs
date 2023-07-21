@@ -9,6 +9,7 @@ fn main() {
 struct GameState {
     position: glm::Vec3,
     rotation: glm::Vec2,
+    light_power: f32,
     captured: bool,
 }
 
@@ -35,7 +36,12 @@ unsafe fn main0() {
     let vao = gl.create_vertex_array().unwrap();
     let vbo = gl.create_buffer().unwrap();
     let uv_buf = gl.create_buffer().unwrap();
+    let norm_buf = gl.create_buffer().unwrap();
     let mvp_u = gl.get_uniform_location(program, "MVP");
+    let m_u = gl.get_uniform_location(program, "M");
+    let v_u = gl.get_uniform_location(program, "V");
+    let light_pos_w_u = gl.get_uniform_location(program, "lightPosition_w");
+    let light_power_u = gl.get_uniform_location(program, "lightPower");
     let time_u = gl.get_uniform_location(program, "time");
     let sampler_u = gl.get_uniform_location(program, "sampler");
 
@@ -70,6 +76,12 @@ unsafe fn main0() {
         slice_as_u8(&baked.uvs),
         glow::STATIC_DRAW,
     );
+    gl.bind_buffer(glow::ARRAY_BUFFER, Some(norm_buf));
+    gl.buffer_data_u8_slice(
+        glow::ARRAY_BUFFER,
+        slice_as_u8(&baked.normals),
+        glow::STATIC_DRAW,
+    );
     // NOTE
     let mut culling = true;
     gl.enable(glow::CULL_FACE);
@@ -77,8 +89,9 @@ unsafe fn main0() {
     gl.depth_func(glow::LESS);
 
     let mut state = GameState {
-        position: glm::vec3(0., 0., -4.5),
-        rotation: glm::vec2(0., 0.),
+        position: glm::vec3(9., 3.7, 1.25),
+        rotation: glm::vec2(-1.7, -0.4),
+        light_power: 50.0,
         captured: true,
     };
 
@@ -92,13 +105,23 @@ unsafe fn main0() {
     let mut fast = false;
 
     'render: loop {
-        let (mvp_mat, right, front) = get_mvp_rf(state.position, state.rotation, fov, aspect_ratio);
+        let ComputedMatrices {
+            mvp: mvp_mat,
+            model: model_mat,
+            view: view_mat,
+            right,
+            front,
+        } = compute_matrices(state.position, state.rotation, fov, aspect_ratio);
 
         gl.clear(glow::COLOR_BUFFER_BIT | glow::DEPTH_BUFFER_BIT);
 
         gl.use_program(Some(program));
         // pass data to shaders
         gl.uniform_matrix_4_f32_slice(mvp_u.as_ref(), false, mat4_as_vec(mvp_mat));
+        gl.uniform_matrix_4_f32_slice(m_u.as_ref(), false, mat4_as_vec(model_mat));
+        gl.uniform_matrix_4_f32_slice(v_u.as_ref(), false, mat4_as_vec(view_mat));
+        gl.uniform_3_f32(light_pos_w_u.as_ref(), 4., 3., 3.);
+        gl.uniform_1_f32(light_power_u.as_ref(), state.light_power);
         gl.uniform_1_f32(time_u.as_ref(), start.elapsed().unwrap().as_secs_f32());
         // enable buffers
         gl.enable_vertex_attrib_array(0);
@@ -107,11 +130,14 @@ unsafe fn main0() {
         gl.enable_vertex_attrib_array(1);
         gl.bind_buffer(glow::ARRAY_BUFFER, Some(uv_buf));
         gl.vertex_attrib_pointer_f32(1, 2, glow::FLOAT, false, 0, 0);
+        gl.enable_vertex_attrib_array(2);
+        gl.bind_buffer(glow::ARRAY_BUFFER, Some(norm_buf));
+        gl.vertex_attrib_pointer_f32(2, 3, glow::FLOAT, false, 0, 0);
 
         // NOTE: max simultaneous textures is 32
         for (i, &tx) in textures.iter().enumerate() {
             gl.uniform_1_i32(sampler_u.as_ref(), i as i32);
-            gl.active_texture(glow::TEXTURE0 + (i as u32));
+            gl.active_texture(glow::TEXTURE0 + i as u32);
             gl.bind_texture(glow::TEXTURE_2D, tx);
             gl.draw_arrays(glow::TRIANGLES, baked.offsets[i], baked.lengths[i]);
         }
@@ -120,11 +146,12 @@ unsafe fn main0() {
         window.gl_swap_window();
         gl.disable_vertex_attrib_array(0);
         gl.disable_vertex_attrib_array(1);
+        gl.disable_vertex_attrib_array(2);
 
         let mouse_speed: f32 = 0.005;
         let speed_fast: f32 = 5.0;
         let speed_slow: f32 = 2.0;
-        let speed = if fast {speed_fast} else {speed_slow};
+        let speed = if fast { speed_fast } else { speed_slow };
         current_time = start.elapsed().unwrap().as_secs_f32();
         delta_time = current_time - prev_time;
 
@@ -213,25 +240,47 @@ fn handle_event(event: sdl2::event::Event, state: &mut GameState) {
     use sdl2::keyboard::Scancode;
 
     match event {
-        // stub for rust-analyzer
-        Event::Quit { .. } => {},
+        Event::KeyDown {
+            scancode: Some(Scancode::R),
+            ..
+        } => {
+            let glm::Vec2 { x, y } = state.rotation;
+            println!("Rotation: {} {}", x, y);
+        },
         Event::KeyDown {
             scancode: Some(Scancode::P),
             ..
         } => {
-            let glm::Vector3 { x, y, z } = state.position;
+            let glm::Vec3 { x, y, z } = state.position;
             println!("Position: {} {} {}", x, y, z);
+        },
+        Event::KeyDown {
+            scancode: Some(Scancode::L),
+            ..
+        } => {
+            println!("Light power: {}", state.light_power);
+        },
+        Event::MouseWheel { y, .. } if state.captured => {
+            state.light_power += 5.0 * y as f32;
+            state.light_power = state.light_power.clamp(0.0, 100.0);
         },
         _ => {},
     }
 }
 
-fn get_mvp_rf(
+struct ComputedMatrices {
+    mvp: glm::Mat4,
+    model: glm::Mat4,
+    view: glm::Mat4,
+    right: glm::Vec3,
+    front: glm::Vec3,
+}
+fn compute_matrices(
     position: glm::Vec3,
     rotation: glm::Vec2,
     fov: f32,
     aspect_ratio: f32,
-) -> (glm::Mat4, glm::Vec3, glm::Vec3) {
+) -> ComputedMatrices {
     let z_near = 0.1;
     let z_far = 100.0;
     let projection = glm::ext::perspective(fov, aspect_ratio, z_near, z_far);
@@ -246,7 +295,14 @@ fn get_mvp_rf(
 
     let view = glm::ext::look_at(position, position + direction, up);
     let model = MAT4_ONE;
-    (projection * view * model, right, front)
+    let mvp = projection * view * model;
+    ComputedMatrices {
+        mvp,
+        model,
+        view,
+        right,
+        front,
+    }
 }
 
 struct BakedMeshes {
@@ -254,6 +310,7 @@ struct BakedMeshes {
     offsets: Vec<i32>,
     lengths: Vec<i32>,
     uvs: Vec<f32>,
+    normals: Vec<f32>,
 }
 unsafe fn bake_meshes(models: Vec<Model>) -> BakedMeshes {
     let mut models = models
@@ -272,13 +329,13 @@ unsafe fn bake_meshes(models: Vec<Model>) -> BakedMeshes {
     let mut offsets = Vec::new();
     let mut lengths = Vec::new();
     let mut uvs = Vec::new();
+    let mut normals = Vec::new();
     // NOTE: models without material_id is ignored for now
     let mut offset = 0;
     let mut length = 0;
     let mut prev_mat_id = models[0].mesh.material_id.unwrap();
 
     for model in models {
-        println!("Loaded model {}", model.name);
         let m = &model.mesh;
         let mat_id = m.material_id.unwrap();
         if mat_id != prev_mat_id {
@@ -314,7 +371,16 @@ unsafe fn bake_meshes(models: Vec<Model>) -> BakedMeshes {
                 )
                 .collect::<Vec<_>>(),
         );
+        normals.append(
+            &mut m
+                .normal_indices
+                .iter()
+                .map(|&i| i as usize)
+                .flat_map(|i| [m.normals[3 * i], m.normals[3 * i + 1], m.normals[3 * i + 2]])
+                .collect::<Vec<_>>(),
+        );
         length += m.indices.len();
+        println!("Loaded model {}", model.name);
     }
     offsets.push(offset as i32);
     lengths.push(length as i32);
@@ -323,6 +389,7 @@ unsafe fn bake_meshes(models: Vec<Model>) -> BakedMeshes {
         offsets,
         lengths,
         uvs,
+        normals,
     }
 }
 
