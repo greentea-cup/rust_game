@@ -30,7 +30,8 @@ unsafe fn main0() {
         sdl,
         window,
         mut event_loop,
-        #[allow(unused)] gl_context, // holds gl context, should not be dropped
+        #[allow(unused)]
+        gl_context, // holds gl context, should not be dropped
     } = init_window(width, height).expect("Cannot initialize window");
     let mouse = sdl.mouse();
     // shaders
