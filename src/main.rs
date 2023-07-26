@@ -70,38 +70,123 @@ unsafe fn main0() {
         let materials = materials.unwrap();
         (models, materials)
     };
+    let mut textures = load_textures(&gl, &materials);
+    {
+        let text_material_id = materials
+            .iter()
+            .enumerate()
+            .find(|(_, mtl)| mtl.name == "Text_material")
+            .unwrap()
+            .0;
+        // NOTE: render sample text
+        let fonts = &[fontdue::Font::from_bytes(
+            std::fs::read("./data/fonts/DejaVuSansMono.ttf").unwrap(),
+            fontdue::FontSettings::default(),
+        )
+        .unwrap()];
+        let (text_texture, w, h) = {
+            // NOTE rgb=3, rgba = 4, grayscale = 1
+            let pixel_width = 3;
+            use fontdue::layout::{CoordinateSystem, GlyphRasterConfig, Layout, TextStyle};
+            let mut ly = Layout::new(CoordinateSystem::PositiveYDown);
+            ly.append(fonts, &TextStyle::new("Test", 72.0, 0));
+            ly.append(fonts, &TextStyle::new("\nsmaller\nlines", 40.0, 0));
+            let (w0, h0) = {
+                // TODO: h = ly.height(); w = /*compute width*/;
+                let (mut x1, mut x2): (i32, i32) = (0, 0);
+                for g in ly.glyphs() {
+                    x1 = x1.min(g.x as i32);
+                    x2 = x2.max(g.x as i32 + g.width as i32);
+                }
+                (1 + (x2 - x1) as usize, ly.height() as usize) // idk why 1+dx
+            };
 
-    let textures = load_textures(&gl, &materials);
+            let (w, h) = (w0.next_power_of_two().max(256), h0.next_power_of_two().max(256));
+            println!("{}x{} -> {}x{}", w0, h0, w, h);
+            let mut res = vec![0; pixel_width * w * h];
+            for g in ly.glyphs() {
+                if g.width == 0 {
+                    continue;
+                }
+                let GlyphRasterConfig {
+                    glyph_index: g_index,
+                    px: g_px,
+                    ..
+                } = g.key;
+                let bmp = fonts[g.font_index].rasterize_indexed(g_index, g_px).1;
+                let start = pixel_width * (g.y as usize * w + g.x as usize);
+                for (i, row) in bmp.chunks(g.width).enumerate() {
+                    for (j, &px) in row.iter().enumerate() {
+                        let offset = start + pixel_width * (i * w + j);
+                        // NOTE
+                        // for i in 0..pixel_width {res[offset+i] = px;}
+                        res[offset] = px;
+                        res[offset + 1] = px;
+                        res[offset + 2] = px;
+                    }
+                }
+            }
+            (res, w, h)
+        };
+        // TODO: adjust uvs for text plane(s)
+
+        let ttx = Some(gl.create_texture().unwrap());
+        gl.bind_texture(glow::TEXTURE_2D, ttx);
+        gl.tex_image_2d(
+            glow::TEXTURE_2D,
+            0,
+            glow::RGB as i32,
+            w as i32,
+            h as i32,
+            0,
+            glow::RGB,
+            glow::UNSIGNED_BYTE,
+            Some(&text_texture),
+        );
+        gl.tex_parameter_i32(
+            glow::TEXTURE_2D,
+            glow::TEXTURE_MAG_FILTER,
+            glow::NEAREST as i32,
+        );
+        gl.tex_parameter_i32(
+            glow::TEXTURE_2D,
+            glow::TEXTURE_MIN_FILTER,
+            glow::NEAREST as i32,
+        );
+        textures[text_material_id] = ttx;
+    }
+
     let baked = bake_meshes(models);
-
-    gl.bind_vertex_array(Some(vao));
-    gl.bind_buffer(glow::ARRAY_BUFFER, Some(vbo));
-    gl.buffer_data_u8_slice(
-        glow::ARRAY_BUFFER,
-        slice_as_u8(&baked.vertices),
-        glow::STATIC_DRAW,
-    );
-    gl.bind_buffer(glow::ARRAY_BUFFER, Some(uv_buf));
-    gl.buffer_data_u8_slice(
-        glow::ARRAY_BUFFER,
-        slice_as_u8(&baked.uvs),
-        glow::STATIC_DRAW,
-    );
-    gl.bind_buffer(glow::ARRAY_BUFFER, Some(norm_buf));
-    gl.buffer_data_u8_slice(
-        glow::ARRAY_BUFFER,
-        slice_as_u8(&baked.normals),
-        glow::STATIC_DRAW,
-    );
-    // NOTE
+    {
+        // NOTE: block with gl data sending
+        gl.bind_vertex_array(Some(vao));
+        gl.bind_buffer(glow::ARRAY_BUFFER, Some(vbo));
+        gl.buffer_data_u8_slice(
+            glow::ARRAY_BUFFER,
+            slice_as_u8(&baked.vertices),
+            glow::STATIC_DRAW,
+        );
+        gl.bind_buffer(glow::ARRAY_BUFFER, Some(uv_buf));
+        gl.buffer_data_u8_slice(
+            glow::ARRAY_BUFFER,
+            slice_as_u8(&baked.uvs),
+            glow::STATIC_DRAW,
+        );
+        gl.bind_buffer(glow::ARRAY_BUFFER, Some(norm_buf));
+        gl.buffer_data_u8_slice(
+            glow::ARRAY_BUFFER,
+            slice_as_u8(&baked.normals),
+            glow::STATIC_DRAW,
+        );
+    }
     let mut culling = true;
     gl.enable(glow::CULL_FACE);
     gl.enable(glow::DEPTH_TEST);
     gl.depth_func(glow::LESS);
 
     let mut state = GameState {
-        position: glm::vec3(9., 3.7, 1.25),
-        rotation: glm::vec2(-1.7, -0.4),
+        position: glm::vec3(5.2, 3.3, 0.),
+        rotation: glm::vec2(-1.57, -1.),
         light_power: 50.0,
         captured: true,
     };
