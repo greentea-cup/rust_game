@@ -1,3 +1,4 @@
+use crate::gl_wrapper::GLWrapper;
 use crate::glmc::*;
 use glow::HasContext;
 use tobj::*;
@@ -19,11 +20,10 @@ pub struct BakedMeshes {
 }
 
 pub struct InitializedWindow {
-    pub gl: glow::Context,
+    pub gl: GLWrapper,
     pub sdl: sdl2::Sdl,
     pub window: sdl2::video::Window,
     pub event_loop: sdl2::EventPump,
-    pub gl_context: sdl2::video::GLContext,
 }
 
 pub type GlowShaderType = u32;
@@ -140,11 +140,12 @@ pub unsafe fn bake_meshes(models: Vec<Model>) -> BakedMeshes {
 }
 
 pub unsafe fn load_textures(
-    gl: &glow::Context,
+    gl: &GLWrapper,
     materials: &Vec<Material>,
-) -> Vec<Option<glow::NativeTexture>> {
+) -> Vec<Option<glow::Texture>> {
     use std::fs::File;
     use std::io::BufReader;
+    let gl = gl.raw();
     let mut textures = Vec::new();
     for tx0 in materials {
         if tx0.diffuse_texture.is_none() {
@@ -193,9 +194,10 @@ pub unsafe fn load_textures(
 }
 
 pub unsafe fn load_shaders(
-    gl: &glow::Context,
+    gl: &GLWrapper,
     shaders: &[(GlowShaderType, &std::path::Path)],
 ) -> glow::NativeProgram {
+    let gl = gl.raw();
     let program = gl.create_program().expect("Cannot create program");
 
     let mut shaders_compiled = Vec::with_capacity(shaders.len());
@@ -246,12 +248,12 @@ pub unsafe fn init_window(width: u32, height: u32) -> Result<InitializedWindow, 
         .map_err(|e| e.to_string())?;
     let gl_context = window.gl_create_context()?;
     let gl = glow::Context::from_loader_function(|s| video.gl_get_proc_address(s) as *const _);
+    let gl_wrapper = GLWrapper::new(gl, gl_context);
     let event_loop = sdl.event_pump()?;
     Ok(InitializedWindow {
-        gl,
+        gl: gl_wrapper,
         sdl,
         window,
         event_loop,
-        gl_context,
     })
 }

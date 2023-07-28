@@ -1,9 +1,10 @@
+mod gl_wrapper;
 mod glmc;
 mod loader;
 mod memcast;
+use crate::gl_wrapper::*;
 use crate::glmc::*;
 use crate::loader::*;
-use crate::memcast::*;
 use glow::HasContext;
 use tobj::load_obj;
 
@@ -11,11 +12,18 @@ fn main() {
     unsafe { main0() }
 }
 
-struct GameState {
+struct GameState<'a> {
+    gl: &'a GLWrapper,
+    window: sdl2::video::Window,
+    mouse: sdl2::mouse::MouseUtil,
     position: glm::Vec3,
     rotation: glm::Vec2,
     light_power: f32,
     captured: bool,
+    wasd: glm::IVec3,
+    fast: bool,
+    running: bool,
+    culling: bool,
 }
 
 unsafe fn main0() {
@@ -30,8 +38,6 @@ unsafe fn main0() {
         sdl,
         window,
         mut event_loop,
-        #[allow(unused)]
-        gl_context, // holds gl context, should not be dropped
     } = init_window(width, height).expect("Cannot initialize window");
     let mouse = sdl.mouse();
     // shaders
@@ -43,18 +49,27 @@ unsafe fn main0() {
     let program = load_shaders(&gl, shaders_raw);
 
     // init some gl things
-    gl.clear_color(0.1, 0.2, 0.3, 1.0);
-    let vao = gl.create_vertex_array().unwrap();
-    let vbo = gl.create_buffer().unwrap();
-    let uv_buf = gl.create_buffer().unwrap();
-    let norm_buf = gl.create_buffer().unwrap();
-    let mvp_u = gl.get_uniform_location(program, "MVP");
-    let m_u = gl.get_uniform_location(program, "M");
-    let v_u = gl.get_uniform_location(program, "V");
-    let light_pos_w_u = gl.get_uniform_location(program, "lightPosition_w");
-    let light_power_u = gl.get_uniform_location(program, "lightPower");
-    let time_u = gl.get_uniform_location(program, "time");
-    let sampler_u = gl.get_uniform_location(program, "sampler");
+    gl.raw().clear_color(0.1, 0.2, 0.3, 1.0);
+    let vao = gl.raw().create_vertex_array().unwrap();
+    // let vbo = gl.raw().create_buffer().unwrap();
+    let vbo = gl
+        .get_vertex_attribute(0, GLBufferTarget::Array, 3, GLType::Float)
+        .unwrap();
+    //let uv_buf = gl.raw().create_buffer().unwrap();
+    let uv_buf = gl
+        .get_vertex_attribute(1, GLBufferTarget::Array, 2, GLType::Float)
+        .unwrap();
+    // let norm_buf = gl.raw().create_buffer().unwrap();
+    let norm_buf = gl
+        .get_vertex_attribute(2, GLBufferTarget::Array, 3, GLType::Float)
+        .unwrap();
+    let mvp_u = gl.get_uniform::<glm::Mat4>(program, "MVP");
+    let m_u = gl.get_uniform::<glm::Mat4>(program, "M");
+    let v_u = gl.get_uniform::<glm::Mat4>(program, "V");
+    let light_pos_w_u = gl.get_uniform::<glm::Vec3>(program, "lightPosition_w");
+    let light_power_u = gl.get_uniform::<f32>(program, "lightPower");
+    let time_u = gl.get_uniform::<f32>(program, "time");
+    let sampler_u = gl.get_uniform::<i32>(program, "sampler");
 
     // generate meshes and sort them
     // TODO: atlases and batching
@@ -90,7 +105,8 @@ unsafe fn main0() {
             use fontdue::layout::{CoordinateSystem, GlyphRasterConfig, Layout, TextStyle};
             let mut ly = Layout::new(CoordinateSystem::PositiveYDown);
             ly.append(fonts, &TextStyle::new("Test", 72.0, 0));
-            ly.append(fonts, &TextStyle::new("\nsmaller\nlines", 40.0, 0));
+            ly.append(fonts, &TextStyle::new("\nsmaller\nlines\n", 40.0, 0));
+            ly.append(fonts, &TextStyle::new("Русский", 40.0, 0));
             let (w0, h0) = {
                 // TODO: h = ly.height(); w = /*compute width*/;
                 let (mut x1, mut x2): (i32, i32) = (0, 0);
@@ -101,7 +117,10 @@ unsafe fn main0() {
                 (1 + (x2 - x1) as usize, ly.height() as usize) // idk why 1+dx
             };
 
-            let (w, h) = (w0.next_power_of_two().max(256), h0.next_power_of_two().max(256));
+            let (w, h) = (
+                w0.next_power_of_two().max(256),
+                h0.next_power_of_two().max(256),
+            );
             println!("{}x{} -> {}x{}", w0, h0, w, h);
             let mut res = vec![0; pixel_width * w * h];
             for g in ly.glyphs() {
@@ -130,9 +149,9 @@ unsafe fn main0() {
         };
         // TODO: adjust uvs for text plane(s)
 
-        let ttx = Some(gl.create_texture().unwrap());
-        gl.bind_texture(glow::TEXTURE_2D, ttx);
-        gl.tex_image_2d(
+        let ttx = Some(gl.raw().create_texture().unwrap());
+        gl.raw().bind_texture(glow::TEXTURE_2D, ttx);
+        gl.raw().tex_image_2d(
             glow::TEXTURE_2D,
             0,
             glow::RGB as i32,
@@ -143,12 +162,12 @@ unsafe fn main0() {
             glow::UNSIGNED_BYTE,
             Some(&text_texture),
         );
-        gl.tex_parameter_i32(
+        gl.raw().tex_parameter_i32(
             glow::TEXTURE_2D,
             glow::TEXTURE_MAG_FILTER,
             glow::NEAREST as i32,
         );
-        gl.tex_parameter_i32(
+        gl.raw().tex_parameter_i32(
             glow::TEXTURE_2D,
             glow::TEXTURE_MIN_FILTER,
             glow::NEAREST as i32,
@@ -159,46 +178,34 @@ unsafe fn main0() {
     let baked = bake_meshes(models);
     {
         // NOTE: block with gl data sending
-        gl.bind_vertex_array(Some(vao));
-        gl.bind_buffer(glow::ARRAY_BUFFER, Some(vbo));
-        gl.buffer_data_u8_slice(
-            glow::ARRAY_BUFFER,
-            slice_as_u8(&baked.vertices),
-            glow::STATIC_DRAW,
-        );
-        gl.bind_buffer(glow::ARRAY_BUFFER, Some(uv_buf));
-        gl.buffer_data_u8_slice(
-            glow::ARRAY_BUFFER,
-            slice_as_u8(&baked.uvs),
-            glow::STATIC_DRAW,
-        );
-        gl.bind_buffer(glow::ARRAY_BUFFER, Some(norm_buf));
-        gl.buffer_data_u8_slice(
-            glow::ARRAY_BUFFER,
-            slice_as_u8(&baked.normals),
-            glow::STATIC_DRAW,
-        );
+        gl.bind_vertex_array(vao);
+        vbo.write(&gl, &baked.vertices, GLBufferUsage::StaticDraw);
+        uv_buf.write(&gl, &baked.uvs, GLBufferUsage::StaticDraw);
+        norm_buf.write(&gl, &baked.normals, GLBufferUsage::StaticDraw);
     }
-    let mut culling = true;
-    gl.enable(glow::CULL_FACE);
-    gl.enable(glow::DEPTH_TEST);
-    gl.depth_func(glow::LESS);
+    gl.raw().enable(glow::CULL_FACE);
+    gl.raw().enable(glow::DEPTH_TEST);
+    gl.raw().depth_func(glow::LESS);
 
     let mut state = GameState {
+        gl: &gl,
+        window,
+        mouse,
         position: glm::vec3(5.2, 3.3, 0.),
         rotation: glm::vec2(-1.57, -1.),
+        wasd: glm::ivec3(0, 0, 0),
         light_power: 50.0,
         captured: true,
+        running: true,
+        fast: false,
+        culling: true,
     };
 
-    mouse.set_relative_mouse_mode(true);
+    state.mouse.set_relative_mouse_mode(true);
 
     let mut prev_time = 0.0;
     let mut current_time;
     let mut delta_time;
-
-    let mut wasd = glm::ivec3(0, 0, 0);
-    let mut fast = false;
 
     'render: loop {
         let ComputedMatrices {
@@ -209,123 +216,53 @@ unsafe fn main0() {
             front,
         } = compute_matrices(state.position, state.rotation, fov, aspect_ratio);
 
-        gl.clear(glow::COLOR_BUFFER_BIT | glow::DEPTH_BUFFER_BIT);
+        gl.raw()
+            .clear(glow::COLOR_BUFFER_BIT | glow::DEPTH_BUFFER_BIT);
 
-        gl.use_program(Some(program));
+        gl.raw().use_program(Some(program));
         // pass data to shaders
-        gl.uniform_matrix_4_f32_slice(mvp_u.as_ref(), false, mat4_as_vec(mvp_mat));
-        gl.uniform_matrix_4_f32_slice(m_u.as_ref(), false, mat4_as_vec(model_mat));
-        gl.uniform_matrix_4_f32_slice(v_u.as_ref(), false, mat4_as_vec(view_mat));
-        gl.uniform_3_f32(light_pos_w_u.as_ref(), 4., 3., 3.);
-        gl.uniform_1_f32(light_power_u.as_ref(), state.light_power);
-        gl.uniform_1_f32(time_u.as_ref(), start.elapsed().unwrap().as_secs_f32());
+        mvp_u.set(&gl, mvp_mat, false);
+        m_u.set(&gl, model_mat, false);
+        v_u.set(&gl, view_mat, false);
+        light_pos_w_u.set(&gl, glm::vec3(4., 3., 3.));
+        light_power_u.set(&gl, state.light_power);
+        time_u.set(&gl, start.elapsed().unwrap().as_secs_f32());
+
         // enable buffers
-        gl.enable_vertex_attrib_array(0);
-        gl.bind_buffer(glow::ARRAY_BUFFER, Some(vbo));
-        gl.vertex_attrib_pointer_f32(0, 3, glow::FLOAT, false, 0, 0);
-        gl.enable_vertex_attrib_array(1);
-        gl.bind_buffer(glow::ARRAY_BUFFER, Some(uv_buf));
-        gl.vertex_attrib_pointer_f32(1, 2, glow::FLOAT, false, 0, 0);
-        gl.enable_vertex_attrib_array(2);
-        gl.bind_buffer(glow::ARRAY_BUFFER, Some(norm_buf));
-        gl.vertex_attrib_pointer_f32(2, 3, glow::FLOAT, false, 0, 0);
+        vbo.enable(&gl, false, 0, 0);
+        uv_buf.enable(&gl, false, 0, 0);
+        norm_buf.enable(&gl, false, 0, 0);
 
         // NOTE: max simultaneous textures is 32
         for (i, &tx) in textures.iter().enumerate() {
-            gl.uniform_1_i32(sampler_u.as_ref(), i as i32);
-            gl.active_texture(glow::TEXTURE0 + i as u32);
-            gl.bind_texture(glow::TEXTURE_2D, tx);
-            gl.draw_arrays(glow::TRIANGLES, baked.offsets[i], baked.lengths[i]);
+            sampler_u.set(&gl, i as i32);
+            gl.raw().active_texture(glow::TEXTURE0 + i as u32);
+            gl.raw().bind_texture(glow::TEXTURE_2D, tx);
+            gl.raw()
+                .draw_arrays(glow::TRIANGLES, baked.offsets[i], baked.lengths[i]);
         }
         // blanks is skipped for now
         // finish drawing
-        window.gl_swap_window();
-        gl.disable_vertex_attrib_array(0);
-        gl.disable_vertex_attrib_array(1);
-        gl.disable_vertex_attrib_array(2);
+        state.window.gl_swap_window();
+        gl.raw().disable_vertex_attrib_array(0);
+        gl.raw().disable_vertex_attrib_array(1);
+        gl.raw().disable_vertex_attrib_array(2);
 
-        let mouse_speed: f32 = 0.005;
         let speed_fast: f32 = 5.0;
         let speed_slow: f32 = 2.0;
-        let speed = if fast { speed_fast } else { speed_slow };
+        let speed = if state.fast { speed_fast } else { speed_slow };
         current_time = start.elapsed().unwrap().as_secs_f32();
         delta_time = current_time - prev_time;
 
         for event in event_loop.poll_iter() {
-            use sdl2::event::Event;
-            use sdl2::keyboard::Scancode;
-            match event {
-                Event::Quit { .. } => break 'render,
-                Event::KeyDown {
-                    scancode: Some(Scancode::Escape),
-                    ..
-                } => {
-                    wasd.x = 0;
-                    wasd.y = 0;
-                    wasd.z = 0;
-                    fast = false;
-                    let (w, h) = window.size();
-                    let (w2, h2) = (w as i32 / 2, h as i32 / 2);
-                    mouse.warp_mouse_in_window(&window, w2, h2);
-                    state.captured = !state.captured;
-                    mouse.set_relative_mouse_mode(state.captured);
-                },
-                Event::MouseMotion { xrel, yrel, .. } if state.captured => {
-                    // xrel + == right
-                    // yrel + == down
-                    state.rotation.x -= mouse_speed * xrel as f32;
-                    state.rotation.y -= mouse_speed * yrel as f32;
-                },
-                Event::KeyDown {
-                    scancode: Some(scancode),
-                    repeat: false,
-                    ..
-                } if state.captured => {
-                    match scancode {
-                        // x+ forward
-                        // y+ up
-                        // z+ right
-                        Scancode::W => wasd.x += 1,
-                        Scancode::A => wasd.z -= 1,
-                        Scancode::S => wasd.x -= 1,
-                        Scancode::D => wasd.z += 1,
-                        Scancode::Space => wasd.y += 1,
-                        Scancode::LShift => wasd.y -= 1,
-                        Scancode::Tab => fast = true,
-                        Scancode::G => {
-                            culling = !culling;
-                            if culling {
-                                gl.enable(glow::CULL_FACE);
-                                println!("Culling on");
-                            } else {
-                                gl.disable(glow::CULL_FACE);
-                                println!("Culling off");
-                            }
-                        },
-                        _ => handle_event(event, &mut state),
-                    }
-                },
-                Event::KeyUp {
-                    scancode: Some(scancode),
-                    repeat: false,
-                    ..
-                } if state.captured => {
-                    match scancode {
-                        // inverted KeyDown
-                        Scancode::W => wasd.x -= 1,
-                        Scancode::A => wasd.z += 1,
-                        Scancode::S => wasd.x += 1,
-                        Scancode::D => wasd.z -= 1,
-                        Scancode::Space => wasd.y -= 1,
-                        Scancode::LShift => wasd.y += 1,
-                        Scancode::Tab => fast = false,
-                        _ => handle_event(event, &mut state),
-                    }
-                },
-                _ => handle_event(event, &mut state),
+            handle_event(event, &mut state);
+            if !state.running {
+                break 'render;
             }
         }
-        let pos_diff = front * wasd.x as f32 + right * wasd.z as f32 + VEC3_UP * wasd.y as f32;
+        let pos_diff = front * state.wasd.x as f32
+            + right * state.wasd.z as f32
+            + VEC3_UP * state.wasd.y as f32;
         state.position = state.position + pos_diff * delta_time * speed;
         prev_time = current_time;
     }
@@ -335,7 +272,83 @@ fn handle_event(event: sdl2::event::Event, state: &mut GameState) {
     use sdl2::event::Event;
     use sdl2::keyboard::Scancode;
 
+    let mouse_speed: f32 = 0.005;
+
     match event {
+        Event::Quit { .. } => {
+            state.running = false;
+        },
+        Event::KeyDown {
+            scancode: Some(Scancode::Escape),
+            ..
+        } => {
+            state.wasd.x = 0;
+            state.wasd.y = 0;
+            state.wasd.z = 0;
+            state.fast = false;
+            let (w, h) = state.window.size();
+            let (w2, h2) = (w as i32 / 2, h as i32 / 2);
+            state.mouse.warp_mouse_in_window(&state.window, w2, h2);
+            state.captured = !state.captured;
+            state.mouse.set_relative_mouse_mode(state.captured);
+        },
+        Event::MouseMotion { xrel, yrel, .. } if state.captured => {
+            // xrel + == right
+            // yrel + == down
+            state.rotation.x -= mouse_speed * xrel as f32;
+            state.rotation.y -= mouse_speed * yrel as f32;
+        },
+        Event::KeyDown {
+            scancode: Some(scancode),
+            repeat: false,
+            ..
+        } if state.captured => {
+            match scancode {
+                // x+ forward
+                // y+ up
+                // z+ right
+                Scancode::W => state.wasd.x += 1,
+                Scancode::A => state.wasd.z -= 1,
+                Scancode::S => state.wasd.x -= 1,
+                Scancode::D => state.wasd.z += 1,
+                Scancode::Space => state.wasd.y += 1,
+                Scancode::LShift => state.wasd.y -= 1,
+                Scancode::Tab => state.fast = true,
+                Scancode::G => {
+                    state.culling = !state.culling;
+                    if state.culling {
+                        unsafe {
+                            state.gl.raw().enable(glow::CULL_FACE);
+                        }
+                        println!("Culling on");
+                    } else {
+                        unsafe {
+                            state.gl.raw().disable(glow::CULL_FACE);
+                        }
+                        println!("Culling off");
+                    }
+                },
+                _ => {},
+            }
+        },
+        Event::KeyUp {
+            scancode: Some(scancode),
+            repeat: false,
+            ..
+        } if state.captured => {
+            match scancode {
+                // inverted KeyDown
+                Scancode::W => state.wasd.x -= 1,
+                Scancode::A => state.wasd.z += 1,
+                Scancode::S => state.wasd.x += 1,
+                Scancode::D => state.wasd.z -= 1,
+                Scancode::Space => state.wasd.y -= 1,
+                Scancode::LShift => state.wasd.y += 1,
+                Scancode::Tab => state.fast = false,
+                _ => {},
+            }
+        },
+
         Event::KeyDown {
             scancode: Some(Scancode::R),
             ..
