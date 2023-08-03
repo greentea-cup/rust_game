@@ -1,4 +1,4 @@
-use crate::gl_wrapper::GLWrapper;
+use crate::gl_wrapper::*;
 use crate::glmc::*;
 use glow::HasContext;
 use tobj::*;
@@ -25,8 +25,6 @@ pub struct InitializedWindow {
     pub window: sdl2::video::Window,
     pub event_loop: sdl2::EventPump,
 }
-
-pub type GlowShaderType = u32;
 
 pub fn compute_matrices(
     position: glm::Vec3,
@@ -145,7 +143,6 @@ pub unsafe fn load_textures(
 ) -> Vec<Option<glow::Texture>> {
     use std::fs::File;
     use std::io::BufReader;
-    let gl = gl.raw();
     let mut textures = Vec::new();
     for tx0 in materials {
         if tx0.diffuse_texture.is_none() {
@@ -154,8 +151,8 @@ pub unsafe fn load_textures(
         }
         let tx_path = tx0.diffuse_texture.as_ref().unwrap();
         // NOTE consider safety
-        let tx = Some(gl.create_texture().unwrap());
-        gl.bind_texture(glow::TEXTURE_2D, tx);
+        let tx = Some(gl.raw().create_texture().unwrap());
+        gl.raw().bind_texture(glow::TEXTURE_2D, tx);
         let txr_img = image::load(
             BufReader::new(File::open(tx_path).unwrap()),
             image::ImageFormat::Png,
@@ -164,7 +161,7 @@ pub unsafe fn load_textures(
         .into_rgba8();
         let txr_data = txr_img.as_flat_samples().samples;
         let (w, h) = (txr_img.width() as i32, txr_img.height() as i32);
-        gl.tex_image_2d(
+        gl.raw().tex_image_2d(
             glow::TEXTURE_2D,
             0, // level of detail TODO: mipmapping
             glow::RGB as i32,
@@ -178,12 +175,12 @@ pub unsafe fn load_textures(
         // NOTE: releated to mipmapping
         // see glTexParameter#GL_TEXTURE_MIN_FILTER, glTexParameter#GL_TEXTURE_MAG_FILTER
         // (khronos)
-        gl.tex_parameter_i32(
+        gl.raw().tex_parameter_i32(
             glow::TEXTURE_2D,
             glow::TEXTURE_MAG_FILTER,
             glow::NEAREST as i32,
         );
-        gl.tex_parameter_i32(
+        gl.raw().tex_parameter_i32(
             glow::TEXTURE_2D,
             glow::TEXTURE_MIN_FILTER,
             glow::NEAREST as i32,
@@ -193,40 +190,28 @@ pub unsafe fn load_textures(
     textures
 }
 
-pub unsafe fn load_shaders(
-    gl: &GLWrapper,
-    shaders: &[(GlowShaderType, &std::path::Path)],
-) -> glow::NativeProgram {
-    let gl = gl.raw();
-    let program = gl.create_program().expect("Cannot create program");
+pub unsafe fn load_shaders<'a>(
+    gl: &'a GLWrapper,
+    shaders: &[(GLShaderType, &std::path::Path)],
+) -> GLProgram<'a> {
+    use std::fs::read_to_string;
+    let program = gl.create_program().unwrap();
 
     let mut shaders_compiled = Vec::with_capacity(shaders.len());
     for (shader_type, path) in shaders {
         let path_abs = path
             .canonicalize()
             .unwrap_or_else(|_| panic!("Cannot load shader: {}", path.display()));
-        let source = std::fs::read_to_string(&path_abs).unwrap();
-        let shader = gl
-            .create_shader(*shader_type)
-            .expect("Cannot create shader");
-        gl.shader_source(shader, &source);
-
-        gl.compile_shader(shader);
-        if !gl.get_shader_compile_status(shader) {
-            panic!("{} {}", &path_abs.display(), gl.get_shader_info_log(shader));
-        }
-
-        gl.attach_shader(program, shader);
+        let source = read_to_string(&path_abs).unwrap();
+        let shader = gl.create_shader(*shader_type, &source).unwrap();
+        program.attach_shader(shader);
         shaders_compiled.push(shader);
     }
 
-    gl.link_program(program);
-    if !gl.get_program_link_status(program) {
-        panic!("{}", gl.get_program_info_log(program));
-    }
+    program.link().unwrap();
 
     for shader in shaders_compiled {
-        gl.detach_shader(program, shader);
+        program.detach_shader(shader);
     }
     program
 }

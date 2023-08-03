@@ -11,6 +11,7 @@ out vec3 color;
 uniform sampler2D sampler;
 uniform vec3 lightPosition_w;
 uniform float lightPower;
+uniform ivec3 lightIntensity;
 
 void main() {
     vec3 lightColor = vec3(1, 1, 1);
@@ -25,8 +26,10 @@ void main() {
     vec3 reflection = reflect(-light, norm);
     float cosA = clamp(dot(eye, reflection), 0, 1);
     float sqr_dist = dist * dist;
-    color = (
-        mAmbient +
-        mDiffuse * lightColor * lightPower * cos0 / sqr_dist +
-        mSpecular * lightColor * lightPower * pow(cosA, 5) / sqr_dist);
+    vec3 colorA = lightIntensity.x * mAmbient;
+    vec3 colorD = lightIntensity.y * (
+            mDiffuse * lightColor * lightPower * cos0 / sqr_dist);
+    vec3 colorS = lightIntensity.z * (
+            mSpecular * lightColor * lightPower * pow(cosA, 5) / sqr_dist);
+    color = colorA + colorD + colorS;
 }

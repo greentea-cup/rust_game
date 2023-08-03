@@ -1,5 +1,7 @@
 #![allow(dead_code)]
+pub use self::enums::*;
 use crate::memcast::*;
+pub mod enums;
 use glm::*;
 use glow::HasContext;
 use std::marker::PhantomData;
@@ -11,103 +13,58 @@ pub struct GLWrapper {
 }
 
 #[derive(Clone, Copy)]
-pub enum GLBufferTarget {
-    Array,
-    AtomicCounter,
-    CopyRead,
-    CopyWrite,
-    DispatchIndirect,
-    DrawIndirect,
-    ElementArray,
-    PixelPack,
-    PixelUnpack,
-    Query,
-    ShederStorage,
-    Texture,
-    TransformFeedback,
-    Uniform,
+pub struct GLShader {
+    shader: glow::NativeShader,
+    shader_type: GLShaderType,
 }
-impl From<GLBufferTarget> for u32 {
-    fn from(value: GLBufferTarget) -> u32 {
-        use GLBufferTarget::*;
-        match value {
-            Array => glow::ARRAY_BUFFER,
-            AtomicCounter => glow::ATOMIC_COUNTER_BUFFER,
-            CopyRead => glow::COPY_READ_BUFFER,
-            CopyWrite => glow::COPY_WRITE_BUFFER,
-            DispatchIndirect => glow::DISPATCH_INDIRECT_BUFFER,
-            DrawIndirect => glow::DRAW_INDIRECT_BUFFER,
-            ElementArray => glow::ELEMENT_ARRAY_BUFFER,
-            PixelPack => glow::PIXEL_PACK_BUFFER,
-            PixelUnpack => glow::PIXEL_UNPACK_BUFFER,
-            Query => glow::QUERY_BUFFER,
-            ShederStorage => glow::SHADER_STORAGE_BUFFER,
-            Texture => glow::TEXTURE_BUFFER,
-            TransformFeedback => glow::TRANSFORM_FEEDBACK_BUFFER,
-            Uniform => glow::UNIFORM_BUFFER,
-        }
+impl GLShader {
+    pub fn raw(&self) -> glow::NativeShader {
+        self.shader
     }
 }
 
-#[derive(Clone, Copy)]
-pub enum GLBufferUsage {
-    StreamDraw,
-    StreamRead,
-    StreamCopy,
-    StaticDraw,
-    StaticRead,
-    StaticCopy,
-    DynamicDraw,
-    DynamicRead,
-    DynamicCopy,
+pub struct GLProgram<'a> {
+    gl: &'a GLWrapper,
+    program: glow::Program,
 }
-impl From<GLBufferUsage> for u32 {
-    fn from(value: GLBufferUsage) -> u32 {
-        use GLBufferUsage::*;
-        match value {
-            StreamDraw => glow::STREAM_DRAW,
-            StreamRead => glow::STREAM_READ,
-            StreamCopy => glow::STREAM_COPY,
-            StaticDraw => glow::STATIC_DRAW,
-            StaticRead => glow::STATIC_READ,
-            StaticCopy => glow::STATIC_COPY,
-            DynamicDraw => glow::DYNAMIC_DRAW,
-            DynamicRead => glow::DYNAMIC_READ,
-            DynamicCopy => glow::DYNAMIC_COPY,
+impl<'a> GLProgram<'a> {
+    pub fn raw(&self) -> glow::NativeProgram {
+        self.program
+    }
+
+    pub fn attach_shader(&self, shader: GLShader) {
+        unsafe { self.gl.raw().attach_shader(self.program, shader.shader) }
+    }
+
+    pub fn detach_shader(&self, shader: GLShader) {
+        unsafe { self.gl.raw().detach_shader(self.program, shader.shader) }
+    }
+
+    pub fn link(&self) -> Result<(), String> {
+        unsafe {
+            self.gl.raw().link_program(self.program);
+            if !self.gl.raw().get_program_link_status(self.program) {
+                Err(self.gl.raw().get_program_info_log(self.program))
+            } else {
+                Ok(())
+            }
+        }
+    }
+
+    pub fn get_uniform<T: GLUniformType>(&'a self, name: &'a str) -> GLUniform<'a, T> {
+        let location = unsafe { self.gl.raw().get_uniform_location(self.program, name) };
+        GLUniform::<T> {
+            program: self,
+            name,
+            location,
+            phantom: PhantomData,
         }
     }
 }
-
-#[derive(Clone, Copy)]
-pub enum GLType {
-    Byte,
-    UnsignedByte,
-    Short,
-    UnsignedShort,
-    Int,
-    UnsignedInt,
-    HalfFloat,
-    Float,
-    Double,
-    Fixed,
-    // NOTE: not all types listed
-    // for other types use GLWrapper::raw() calls
-}
-
-impl From<GLType> for u32 {
-    fn from(value: GLType) -> u32 {
-        use GLType::*;
-        match value {
-            Byte => glow::BYTE,
-            UnsignedByte => glow::UNSIGNED_BYTE,
-            Short => glow::SHORT,
-            UnsignedShort => glow::UNSIGNED_SHORT,
-            Int => glow::INT,
-            UnsignedInt => glow::UNSIGNED_INT,
-            HalfFloat => glow::FLOAT,
-            Float => glow::FLOAT,
-            Double => glow::DOUBLE,
-            Fixed => glow::FIXED,
+impl Drop for GLProgram<'_> {
+    fn drop(&mut self) {
+        unsafe {
+            self.gl.raw().delete_program(self.program);
         }
     }
 }
@@ -144,106 +101,34 @@ impl GLVertexAttribute {
     }
 }
 
-pub struct GLUniform<T: GLUniformType> {
-    name: String,
+pub trait GLUniformType {}
+// GLUniformType impls are in enums module
+pub struct GLUniform<'a, T: GLUniformType> {
+    program: &'a GLProgram<'a>,
+    name: &'a str,
     location: Option<glow::UniformLocation>,
     phantom: PhantomData<T>,
     // NOTE: see GLWrapper::get_uniform
 }
-pub trait GLUniformType {}
-macro_rules! uniform_impl {
-    (
-        $type:ty,
-        $func:ident,
-        $a:ident,
-        $($bs:expr),+) => {
-        impl GLUniformType for $type {}
-        impl GLUniform<$type> {
-            pub fn set(&self, gl: &GLWrapper, $a: $type) {
-                unsafe {
-                    gl.raw().$func(
-                        self.location.as_ref(),
-                        $($bs),+
-                    );
-                }
-            }
-        }
-    };
-    (
-        $type:ty,
-        $func:ident,
-        $a:ident,
-        transpose;
-        $($bs:expr),+) => {
-        impl GLUniformType for $type {}
-        impl GLUniform<$type> {
-            pub fn set(&self, gl: &GLWrapper, $a: $type, transpose: bool) {
-                unsafe {
-                    gl.raw().$func(
-                        self.location.as_ref(),
-                        transpose,
-                        $($bs),+
-                    );
-                }
-            }
-        }
-    };
-}
-
-// TODO: stop wasting time
-uniform_impl!(f32, uniform_1_f32, v, v);
-uniform_impl!(Vec2, uniform_2_f32, v, v.x, v.y);
-uniform_impl!(Vec3, uniform_3_f32, v, v.x, v.y, v.z);
-uniform_impl!(Vec4, uniform_4_f32, v, v.x, v.y, v.z, v.w);
-uniform_impl!(&[f32], uniform_1_f32_slice, v, v);
-uniform_impl!(&[Vec2], uniform_2_f32_slice, v, vec_as_slice(v));
-uniform_impl!(&[Vec3], uniform_3_f32_slice, v, vec_as_slice(v));
-uniform_impl!(&[Vec4], uniform_4_f32_slice, v, vec_as_slice(v));
-
-uniform_impl!(i32, uniform_1_i32, v, v);
-uniform_impl!(IVec2, uniform_2_i32, v, v.x, v.y);
-uniform_impl!(IVec3, uniform_3_i32, v, v.x, v.y, v.z);
-uniform_impl!(IVec4, uniform_4_i32, v, v.x, v.y, v.z, v.w);
-uniform_impl!(&[i32], uniform_1_i32_slice, v, v);
-uniform_impl!(&[IVec2], uniform_2_i32_slice, v, vec_as_slice(v));
-uniform_impl!(&[IVec3], uniform_3_i32_slice, v, vec_as_slice(v));
-uniform_impl!(&[IVec4], uniform_4_i32_slice, v, vec_as_slice(v));
-
-uniform_impl!(u32, uniform_1_u32, v, v);
-uniform_impl!(UVec2, uniform_2_u32, v, v.x, v.y);
-uniform_impl!(UVec3, uniform_3_u32, v, v.x, v.y, v.z);
-uniform_impl!(UVec4, uniform_4_u32, v, v.x, v.y, v.z, v.w);
-uniform_impl!(&[u32], uniform_1_u32_slice, v, v);
-uniform_impl!(&[UVec2], uniform_2_u32_slice, v, vec_as_slice(v));
-uniform_impl!(&[UVec3], uniform_3_u32_slice, v, vec_as_slice(v));
-uniform_impl!(&[UVec4], uniform_4_u32_slice, v, vec_as_slice(v));
-
-uniform_impl!(Mat2, uniform_matrix_2_f32_slice, v, transpose; mat2_as_slice(v));
-uniform_impl!(Mat3, uniform_matrix_3_f32_slice, v, transpose; mat3_as_slice(v));
-uniform_impl!(Mat4, uniform_matrix_4_f32_slice, v, transpose; mat4_as_slice(v));
-uniform_impl!(&[Mat2], uniform_matrix_2_f32_slice, v, transpose; mat2_slice_as_slice(v));
-uniform_impl!(&[Mat3], uniform_matrix_3_f32_slice, v, transpose; mat3_slice_as_slice(v));
-uniform_impl!(&[Mat4], uniform_matrix_4_f32_slice, v, transpose; mat4_slice_as_slice(v));
-
-pub enum GLTextureTarget {
-    Texture1D,
-    Texture2D,
-    Texture3D,
-}
-impl From<GLTextureTarget> for u32 {
-    fn from(value: GLTextureTarget) -> u32 {
-        use GLTextureTarget::*;
-        match value {
-            Texture1D => glow::TEXTURE_1D,
-            Texture2D => glow::TEXTURE_2D,
-            Texture3D => glow::TEXTURE_3D,
-        }
+impl<T: GLUniformType> GLUniform<'_, T> {
+    pub fn name(&self) -> &str {
+        self.name
+    }
+    fn gl(&self) -> &'_ GLWrapper {
+        self.program.gl
+    }
+    fn raw_gl(&self) -> &glow::Context {
+        self.gl().raw()
     }
 }
-pub struct GLTexture {
+
+// TODO
+pub struct GLTexture<'a> {
+    gl: &'a GLWrapper,
     texture: glow::Texture,
     target: GLTextureTarget,
 }
+impl GLTexture<'_> {}
 
 #[allow(unused)]
 impl GLWrapper {
@@ -309,21 +194,58 @@ impl GLWrapper {
         })
     }
 
-    pub fn get_uniform<T: GLUniformType>(
-        &self,
-        program: glow::Program,
-        name: &str,
-    ) -> GLUniform<T> {
-        let location = unsafe { self.gl.get_uniform_location(program, name) };
-        GLUniform::<T> {
-            name: name.to_owned(),
-            location,
-            phantom: PhantomData,
+    pub fn create_program(&self) -> Result<GLProgram<'_>, String> {
+        let program = unsafe { self.gl.create_program()? };
+        Ok(GLProgram { gl: self, program })
+    }
+
+    pub fn set_program(&self, program: &GLProgram<'_>) {
+        unsafe { self.gl.use_program(Some(program.program)) }
+    }
+
+    pub fn reset_program(&self) {
+        unsafe { self.gl.use_program(None) }
+    }
+
+    pub fn create_blank_shader(&self, shader_type: GLShaderType) -> Result<GLShader, String> {
+        let shader = unsafe { self.gl.create_shader(shader_type.into())? };
+        Ok(GLShader {
+            shader,
+            shader_type,
+        })
+    }
+
+    pub fn compile_shader(&self, shader: GLShader) -> Result<(), String> {
+        let shader = shader.shader;
+        unsafe {
+            self.gl.compile_shader(shader);
+            if !self.gl.get_shader_compile_status(shader) {
+                Err(self.gl.get_shader_info_log(shader))
+            } else {
+                Ok(())
+            }
         }
     }
 
-    pub fn get_texture(&self, target: GLTextureTarget) -> Result<GLTexture, String> {
+    pub fn create_shader(
+        &self,
+        shader_type: GLShaderType,
+        source: &str,
+    ) -> Result<GLShader, String> {
+        unsafe {
+            let shader = self.create_blank_shader(shader_type)?;
+            self.gl.shader_source(shader.shader, source);
+            self.compile_shader(shader)?;
+            Ok(shader)
+        }
+    }
+
+    pub fn create_texture(&self, target: GLTextureTarget) -> Result<GLTexture, String> {
         let texture = unsafe { self.gl.create_texture()? };
-        Ok(GLTexture { texture, target })
+        Ok(GLTexture {
+            gl: self,
+            texture,
+            target,
+        })
     }
 }

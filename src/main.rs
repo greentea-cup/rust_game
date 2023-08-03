@@ -19,11 +19,13 @@ struct GameState<'a> {
     position: glm::Vec3,
     rotation: glm::Vec2,
     light_power: f32,
+    light_intensity: glm::IVec3,
     captured: bool,
     wasd: glm::IVec3,
     fast: bool,
     running: bool,
     culling: bool,
+    draw_calls: u32,
 }
 
 unsafe fn main0() {
@@ -42,8 +44,8 @@ unsafe fn main0() {
     let mouse = sdl.mouse();
     // shaders
     let shaders_raw = &[
-        (glow::VERTEX_SHADER, "./data/shaders/vertex.glsl"),
-        (glow::FRAGMENT_SHADER, "./data/shaders/fragment.glsl"),
+        (GLShaderType::Vertex, "./data/shaders/vertex.glsl"),
+        (GLShaderType::Fragment, "./data/shaders/fragment.glsl"),
     ]
     .map(|(t, p)| (t, std::path::Path::new(p)));
     let program = load_shaders(&gl, shaders_raw);
@@ -51,25 +53,23 @@ unsafe fn main0() {
     // init some gl things
     gl.raw().clear_color(0.1, 0.2, 0.3, 1.0);
     let vao = gl.raw().create_vertex_array().unwrap();
-    // let vbo = gl.raw().create_buffer().unwrap();
     let vbo = gl
         .get_vertex_attribute(0, GLBufferTarget::Array, 3, GLType::Float)
         .unwrap();
-    //let uv_buf = gl.raw().create_buffer().unwrap();
     let uv_buf = gl
         .get_vertex_attribute(1, GLBufferTarget::Array, 2, GLType::Float)
         .unwrap();
-    // let norm_buf = gl.raw().create_buffer().unwrap();
     let norm_buf = gl
         .get_vertex_attribute(2, GLBufferTarget::Array, 3, GLType::Float)
         .unwrap();
-    let mvp_u = gl.get_uniform::<glm::Mat4>(program, "MVP");
-    let m_u = gl.get_uniform::<glm::Mat4>(program, "M");
-    let v_u = gl.get_uniform::<glm::Mat4>(program, "V");
-    let light_pos_w_u = gl.get_uniform::<glm::Vec3>(program, "lightPosition_w");
-    let light_power_u = gl.get_uniform::<f32>(program, "lightPower");
-    let time_u = gl.get_uniform::<f32>(program, "time");
-    let sampler_u = gl.get_uniform::<i32>(program, "sampler");
+    let mvp_u = program.get_uniform::<glm::Mat4>("MVP");
+    let m_u = program.get_uniform::<glm::Mat4>("M");
+    let v_u = program.get_uniform::<glm::Mat4>("V");
+    let light_pos_w_u = program.get_uniform::<glm::Vec3>("lightPosition_w");
+    let light_power_u = program.get_uniform::<f32>("lightPower");
+    let light_intensity_u = program.get_uniform::<glm::IVec3>("lightIntensity");
+    let time_u = program.get_uniform::<f32>("time");
+    let sampler_u = program.get_uniform::<i32>("sampler");
 
     // generate meshes and sort them
     // TODO: atlases and batching
@@ -195,10 +195,12 @@ unsafe fn main0() {
         rotation: glm::vec2(-1.57, -1.),
         wasd: glm::ivec3(0, 0, 0),
         light_power: 50.0,
+        light_intensity: glm::ivec3(1, 1, 1),
         captured: true,
         running: true,
         fast: false,
         culling: true,
+        draw_calls: 0,
     };
 
     state.mouse.set_relative_mouse_mode(true);
@@ -206,6 +208,7 @@ unsafe fn main0() {
     let mut prev_time = 0.0;
     let mut current_time;
     let mut delta_time;
+    let mut draw_calls: u32;
 
     'render: loop {
         let ComputedMatrices {
@@ -219,27 +222,29 @@ unsafe fn main0() {
         gl.raw()
             .clear(glow::COLOR_BUFFER_BIT | glow::DEPTH_BUFFER_BIT);
 
-        gl.raw().use_program(Some(program));
+        gl.set_program(&program);
         // pass data to shaders
-        mvp_u.set(&gl, mvp_mat, false);
-        m_u.set(&gl, model_mat, false);
-        v_u.set(&gl, view_mat, false);
-        light_pos_w_u.set(&gl, glm::vec3(4., 3., 3.));
-        light_power_u.set(&gl, state.light_power);
-        time_u.set(&gl, start.elapsed().unwrap().as_secs_f32());
+        mvp_u.set(mvp_mat, false);
+        m_u.set(model_mat, false);
+        v_u.set(view_mat, false);
+        light_pos_w_u.set(glm::vec3(4., 3., 3.));
+        light_power_u.set(state.light_power);
+        light_intensity_u.set(state.light_intensity);
+        time_u.set(start.elapsed().unwrap().as_secs_f32());
 
         // enable buffers
         vbo.enable(&gl, false, 0, 0);
         uv_buf.enable(&gl, false, 0, 0);
         norm_buf.enable(&gl, false, 0, 0);
-
+        draw_calls = 0;
         // NOTE: max simultaneous textures is 32
         for (i, &tx) in textures.iter().enumerate() {
-            sampler_u.set(&gl, i as i32);
+            sampler_u.set(i as i32);
             gl.raw().active_texture(glow::TEXTURE0 + i as u32);
             gl.raw().bind_texture(glow::TEXTURE_2D, tx);
             gl.raw()
                 .draw_arrays(glow::TRIANGLES, baked.offsets[i], baked.lengths[i]);
+            draw_calls += 1;
         }
         // blanks is skipped for now
         // finish drawing
@@ -247,7 +252,7 @@ unsafe fn main0() {
         gl.raw().disable_vertex_attrib_array(0);
         gl.raw().disable_vertex_attrib_array(1);
         gl.raw().disable_vertex_attrib_array(2);
-
+        state.draw_calls = draw_calls;
         let speed_fast: f32 = 5.0;
         let speed_slow: f32 = 2.0;
         let speed = if state.fast { speed_fast } else { speed_slow };
@@ -303,6 +308,12 @@ fn handle_event(event: sdl2::event::Event, state: &mut GameState) {
             repeat: false,
             ..
         } if state.captured => {
+            macro_rules! intensity {
+                ($field:ident) => {{
+                    let i = state.light_intensity.$field;
+                    state.light_intensity.$field = 1 - i;
+                }};
+            }
             match scancode {
                 // x+ forward
                 // y+ up
@@ -328,6 +339,9 @@ fn handle_event(event: sdl2::event::Event, state: &mut GameState) {
                         println!("Culling off");
                     }
                 },
+                Scancode::T => intensity!(x),
+                Scancode::Y => intensity!(y),
+                Scancode::U => intensity!(z),
                 _ => {},
             }
         },
@@ -348,26 +362,24 @@ fn handle_event(event: sdl2::event::Event, state: &mut GameState) {
                 _ => {},
             }
         },
-
         Event::KeyDown {
-            scancode: Some(Scancode::R),
+            scancode: Some(Scancode::Q),
             ..
         } => {
-            let glm::Vec2 { x, y } = state.rotation;
-            println!("Rotation: {} {}", x, y);
-        },
-        Event::KeyDown {
-            scancode: Some(Scancode::P),
-            ..
-        } => {
-            let glm::Vec3 { x, y, z } = state.position;
-            println!("Position: {} {} {}", x, y, z);
-        },
-        Event::KeyDown {
-            scancode: Some(Scancode::L),
-            ..
-        } => {
+            {
+                let glm::Vec2 { x, y } = state.rotation;
+                println!("Rotation: {} {}", x, y);
+            }
+            {
+                let glm::Vec3 { x, y, z } = state.position;
+                println!("Position: {} {} {}", x, y, z);
+            }
             println!("Light power: {}", state.light_power);
+            {
+                let glm::IVec3 {x, y, z} = state.light_intensity;
+                println!("Light A{} D{} S{}", x, y, z);
+            }
+            println!("Draw calls: {}", state.draw_calls);
         },
         Event::MouseWheel { y, .. } if state.captured => {
             state.light_power += 5.0 * y as f32;
