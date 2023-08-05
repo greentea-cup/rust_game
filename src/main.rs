@@ -26,6 +26,7 @@ struct GameState<'a> {
     running: bool,
     culling: bool,
     draw_calls: u32,
+    draw_depth: bool,
 }
 
 unsafe fn main0() {
@@ -71,6 +72,9 @@ unsafe fn main0() {
     let light_intensity_u = program.get_uniform::<glm::IVec3>("lightIntensity");
     let time_u = program.get_uniform::<f32>("time");
     let sampler_u = program.get_uniform::<i32>("sampler");
+    let draw_depth_u = program.get_uniform::<i32>("drawDepth");
+    let near_u = program.get_uniform::<f32>("near");
+    let far_u = program.get_uniform::<f32>("far");
 
     // generate meshes and sort them
     // TODO: atlases and batching
@@ -198,6 +202,9 @@ unsafe fn main0() {
     gl.raw().enable(glow::CULL_FACE);
     gl.raw().enable(glow::DEPTH_TEST);
     gl.raw().depth_func(glow::LESS);
+    gl.raw().enable(glow::BLEND);
+    gl.raw()
+        .blend_func(glow::SRC_ALPHA, glow::ONE_MINUS_SRC_ALPHA);
 
     let mut state = GameState {
         gl: &gl,
@@ -213,6 +220,7 @@ unsafe fn main0() {
         fast: false,
         culling: true,
         draw_calls: 0,
+        draw_depth: false,
     };
 
     state.mouse.set_relative_mouse_mode(true);
@@ -223,13 +231,14 @@ unsafe fn main0() {
     let mut draw_calls: u32;
 
     'render: loop {
+        let (z_near, z_far) = (0.1, 100.0);
         let ComputedMatrices {
             mvp: mvp_mat,
             model: model_mat,
             view: view_mat,
             right,
             front,
-        } = compute_matrices(state.position, state.rotation, fov, aspect_ratio);
+        } = compute_matrices(state.position, state.rotation, fov, aspect_ratio, z_near, z_far);
 
         gl.raw()
             .clear(glow::COLOR_BUFFER_BIT | glow::DEPTH_BUFFER_BIT);
@@ -243,6 +252,9 @@ unsafe fn main0() {
         light_power_u.set(state.light_power);
         light_intensity_u.set(state.light_intensity);
         time_u.set(start.elapsed().unwrap().as_secs_f32());
+        draw_depth_u.set(state.draw_depth as i32);
+        near_u.set(z_near);
+        far_u.set(z_far);
 
         // enable buffers
         vbo.enable(false, 0, 0);
@@ -344,21 +356,18 @@ fn handle_event(event: sdl2::event::Event, state: &mut GameState) {
                 Scancode::Tab => state.fast = true,
                 Scancode::G => {
                     state.culling = !state.culling;
-                    if state.culling {
-                        unsafe {
-                            state.gl.raw().enable(glow::CULL_FACE);
+                    unsafe {
+                        if state.culling {
+                            state.gl.raw().enable(glow::CULL_FACE)
+                        } else {
+                            state.gl.raw().disable(glow::CULL_FACE)
                         }
-                        println!("Culling on");
-                    } else {
-                        unsafe {
-                            state.gl.raw().disable(glow::CULL_FACE);
-                        }
-                        println!("Culling off");
                     }
                 },
                 Scancode::T => intensity!(x),
                 Scancode::Y => intensity!(y),
                 Scancode::U => intensity!(z),
+                Scancode::N => state.draw_depth = !state.draw_depth,
                 _ => {},
             }
         },
@@ -396,6 +405,7 @@ fn handle_event(event: sdl2::event::Event, state: &mut GameState) {
                 let glm::IVec3 { x, y, z } = state.light_intensity;
                 println!("Light A{} D{} S{}", x, y, z);
             }
+            println!("Draw depth: {}", state.draw_depth);
             println!("Draw calls: {}", state.draw_calls);
         },
         Event::MouseWheel { y, .. } if state.captured => {

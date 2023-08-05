@@ -32,9 +32,9 @@ pub fn compute_matrices(
     rotation: glm::Vec2,
     fov: f32,
     aspect_ratio: f32,
+    z_near: f32,
+    z_far: f32,
 ) -> ComputedMatrices {
-    let z_near = 0.1;
-    let z_far = 100.0;
     let projection = glm::ext::perspective(fov, aspect_ratio, z_near, z_far);
 
     let (cx, sx) = (glm::cos(rotation.x), glm::sin(rotation.x));
@@ -168,7 +168,7 @@ pub unsafe fn load_textures(
         gl.raw().tex_image_2d(
             glow::TEXTURE_2D,
             0, // level of detail TODO: mipmapping
-            glow::RGB as i32,
+            glow::RGBA as i32,
             w,
             h,
             0, // border. literally must be zero. always
@@ -226,7 +226,7 @@ pub unsafe fn init_window(width: u32, height: u32) -> Result<InitializedWindow, 
     let gl_attr = video.gl_attr();
     // init attrs
     gl_attr.set_context_profile(sdl2::video::GLProfile::Core);
-    gl_attr.set_context_version(3, 3);
+    gl_attr.set_context_version(4, 0);
     gl_attr.set_context_flags().forward_compatible().set();
     // create window
     let window = video
