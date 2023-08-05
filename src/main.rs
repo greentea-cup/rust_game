@@ -53,6 +53,7 @@ unsafe fn main0() {
     // init some gl things
     gl.raw().clear_color(0.1, 0.2, 0.3, 1.0);
     let vao = gl.raw().create_vertex_array().unwrap();
+    let elements = gl.raw().create_buffer().unwrap();
     let vbo = gl
         .get_vertex_attribute(0, GLBufferTarget::Array, 3, GLType::Float)
         .unwrap();
@@ -75,7 +76,12 @@ unsafe fn main0() {
     // TODO: atlases and batching
     let (models, materials) = {
         let (models, materials) = load_obj(
-            "./data/objects/sample.obj",
+            [
+                "./data/objects/sample.obj",
+                "./data/objects/sample_2.obj",
+                "./data/objects/dice.obj",
+                "./data/objects/box.obj",
+            ][0],
             &tobj::LoadOptions {
                 triangulate: true,
                 ..Default::default()
@@ -85,6 +91,7 @@ unsafe fn main0() {
         let materials = materials.unwrap();
         (models, materials)
     };
+
     let mut textures = load_textures(&gl, &materials);
     {
         let text_material_id = materials
@@ -100,7 +107,7 @@ unsafe fn main0() {
         )
         .unwrap()];
         let (text_texture, w, h) = {
-            // NOTE rgb=3, rgba = 4, grayscale = 1
+            // NOTE rgb = 3, rgba = 4, grayscale = 1
             let pixel_width = 3;
             use fontdue::layout::{CoordinateSystem, GlyphRasterConfig, Layout, TextStyle};
             let mut ly = Layout::new(CoordinateSystem::PositiveYDown);
@@ -148,7 +155,6 @@ unsafe fn main0() {
             (res, w, h)
         };
         // TODO: adjust uvs for text plane(s)
-
         let ttx = Some(gl.raw().create_texture().unwrap());
         gl.raw().bind_texture(glow::TEXTURE_2D, ttx);
         gl.raw().tex_image_2d(
@@ -179,9 +185,15 @@ unsafe fn main0() {
     {
         // NOTE: block with gl data sending
         gl.bind_vertex_array(vao);
-        vbo.write(&gl, &baked.vertices, GLBufferUsage::StaticDraw);
-        uv_buf.write(&gl, &baked.uvs, GLBufferUsage::StaticDraw);
-        norm_buf.write(&gl, &baked.normals, GLBufferUsage::StaticDraw);
+        gl.write_to_buffer(
+            GLBufferTarget::ElementArray,
+            elements,
+            &baked.indices,
+            GLBufferUsage::StaticDraw,
+        );
+        vbo.write(&baked.vertices, GLBufferUsage::StaticDraw);
+        uv_buf.write(&baked.uvs, GLBufferUsage::StaticDraw);
+        norm_buf.write(&baked.normals, GLBufferUsage::StaticDraw);
     }
     gl.raw().enable(glow::CULL_FACE);
     gl.raw().enable(glow::DEPTH_TEST);
@@ -233,25 +245,30 @@ unsafe fn main0() {
         time_u.set(start.elapsed().unwrap().as_secs_f32());
 
         // enable buffers
-        vbo.enable(&gl, false, 0, 0);
-        uv_buf.enable(&gl, false, 0, 0);
-        norm_buf.enable(&gl, false, 0, 0);
+        vbo.enable(false, 0, 0);
+        uv_buf.enable(false, 0, 0);
+        norm_buf.enable(false, 0, 0);
         draw_calls = 0;
+        gl.bind_buffer(GLBufferTarget::ElementArray, elements);
         // NOTE: max simultaneous textures is 32
         for (i, &tx) in textures.iter().enumerate() {
             sampler_u.set(i as i32);
             gl.raw().active_texture(glow::TEXTURE0 + i as u32);
             gl.raw().bind_texture(glow::TEXTURE_2D, tx);
-            gl.raw()
-                .draw_arrays(glow::TRIANGLES, baked.offsets[i], baked.lengths[i]);
+            gl.raw().draw_elements(
+                glow::TRIANGLES,
+                baked.lengths[i],
+                glow::UNSIGNED_INT,
+                baked.offsets[i],
+            );
             draw_calls += 1;
         }
         // blanks is skipped for now
         // finish drawing
         state.window.gl_swap_window();
-        gl.raw().disable_vertex_attrib_array(0);
-        gl.raw().disable_vertex_attrib_array(1);
-        gl.raw().disable_vertex_attrib_array(2);
+        vbo.disable();
+        uv_buf.disable();
+        norm_buf.disable();
         state.draw_calls = draw_calls;
         let speed_fast: f32 = 5.0;
         let speed_slow: f32 = 2.0;
@@ -376,7 +393,7 @@ fn handle_event(event: sdl2::event::Event, state: &mut GameState) {
             }
             println!("Light power: {}", state.light_power);
             {
-                let glm::IVec3 {x, y, z} = state.light_intensity;
+                let glm::IVec3 { x, y, z } = state.light_intensity;
                 println!("Light A{} D{} S{}", x, y, z);
             }
             println!("Draw calls: {}", state.draw_calls);

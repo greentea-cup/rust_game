@@ -12,6 +12,7 @@ pub struct ComputedMatrices {
 }
 
 pub struct BakedMeshes {
+    pub indices: Vec<u32>,
     pub vertices: Vec<f32>,
     pub offsets: Vec<i32>,
     pub lengths: Vec<i32>,
@@ -79,56 +80,59 @@ pub unsafe fn bake_meshes(models: Vec<Model>) -> BakedMeshes {
     let mut length = 0;
     let mut prev_mat_id = models[0].mesh.material_id.unwrap();
 
+    let mut idx = 0;
+    let mut indices = Vec::new();
+
     for model in models {
+        use std::collections::hash_map::Entry;
+        use std::collections::HashMap;
         let m = &model.mesh;
         let mat_id = m.material_id.unwrap();
         if mat_id != prev_mat_id {
             offsets.push(offset as i32);
             lengths.push(length as i32);
-            offset += length;
+            offset += length * std::mem::size_of::<u32>();
             length = 0;
             prev_mat_id = mat_id;
         }
-        vertices.append(
-            &mut m
-                .indices
-                .iter()
-                .map(|&i| i as usize)
-                .flat_map(|i| {
-                    [
-                        m.positions[i * 3],
-                        m.positions[i * 3 + 1],
-                        m.positions[i * 3 + 2],
-                    ]
-                })
-                .collect::<Vec<_>>(),
-        );
-        uvs.append(
-            &mut m
-                .texcoord_indices
-                .iter()
-                .map(|&i| i as usize)
-                .flat_map(
-                    // NOTE: u, 1-v opengl-tutorial says it's DirectX format, but it also works
-                    // with blender cube, so assume all models are in this format
-                    |i| [m.texcoords[2 * i], 1.0 - m.texcoords[2 * i + 1]],
-                )
-                .collect::<Vec<_>>(),
-        );
-        normals.append(
-            &mut m
-                .normal_indices
-                .iter()
-                .map(|&i| i as usize)
-                .flat_map(|i| [m.normals[3 * i], m.normals[3 * i + 1], m.normals[3 * i + 2]])
-                .collect::<Vec<_>>(),
-        );
-        length += m.indices.len();
+
+        let data = (0..m.indices.len())
+            .map(|i| [m.indices[i], m.texcoord_indices[i], m.normal_indices[i]])
+            .collect::<Vec<_>>();
+        let mut cache = HashMap::new();
+        for x in &data {
+            match cache.entry(x) {
+                Entry::Occupied(e) => {
+                    indices.push(*e.get());
+                },
+                Entry::Vacant(e) => {
+                    e.insert(idx);
+                    indices.push(idx);
+                    idx += 1;
+                    let (p, u, n) = (x[0] as usize, x[1] as usize, x[2] as usize);
+                    vertices.extend([
+                        m.positions[3 * p],
+                        m.positions[3 * p + 1],
+                        m.positions[3 * p + 2],
+                    ]);
+                    uvs.extend([
+                        // NOTE: u, 1-v opengl-tutorial says it's DirectX format, but it also works
+                        // with blender cube, so assume all models are in this format
+                        m.texcoords[2 * u],
+                        1.0 - m.texcoords[2 * u + 1],
+                    ]);
+                    normals.extend([m.normals[3 * n], m.normals[3 * n + 1], m.normals[3 * n + 2]]);
+                },
+            }
+        }
+
+        length += data.len();
         println!("Loaded model {}", model.name);
     }
     offsets.push(offset as i32);
     lengths.push(length as i32);
     BakedMeshes {
+        indices,
         vertices,
         offsets,
         lengths,

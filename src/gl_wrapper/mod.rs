@@ -70,7 +70,8 @@ impl Drop for GLProgram<'_> {
 }
 
 #[derive(Clone, Copy)]
-pub struct GLVertexAttribute {
+pub struct GLVertexAttribute<'a> {
+    gl: &'a GLWrapper,
     index: u32,
     target: GLBufferTarget,
     size: i32, // 1, 2, 3, 4
@@ -78,12 +79,12 @@ pub struct GLVertexAttribute {
     data_type: GLType,
 }
 
-impl GLVertexAttribute {
-    pub fn enable(&self, gl: &GLWrapper, normalized: bool, stride: i32, offset: i32) {
+impl GLVertexAttribute<'_> {
+    pub fn enable(&self, normalized: bool, stride: i32, offset: i32) {
         unsafe {
-            gl.raw().enable_vertex_attrib_array(self.index);
-            gl.bind_buffer(self.target, self.buffer);
-            gl.raw().vertex_attrib_pointer_f32(
+            self.gl.raw().enable_vertex_attrib_array(self.index);
+            self.gl.bind_buffer(self.target, self.buffer);
+            self.gl.raw().vertex_attrib_pointer_f32(
                 self.index,
                 self.size,
                 self.data_type.into(),
@@ -93,11 +94,12 @@ impl GLVertexAttribute {
             );
         }
     }
-    pub fn write<T>(&self, gl: &GLWrapper, data: &[T], usage: GLBufferUsage) {
-        gl.write_to_buffer(self.target, self.buffer, data, usage);
+    pub fn write<T>(&self, data: &[T], usage: GLBufferUsage) {
+        self.gl
+            .write_to_buffer(self.target, self.buffer, data, usage);
     }
-    pub fn disable(&self, gl: &GLWrapper) {
-        unsafe { gl.raw().disable_vertex_attrib_array(self.index) }
+    pub fn disable(&self) {
+        unsafe { self.gl.raw().disable_vertex_attrib_array(self.index) }
     }
 }
 
@@ -186,6 +188,7 @@ impl GLWrapper {
     ) -> Result<GLVertexAttribute, String> {
         let buffer = unsafe { self.gl.create_buffer()? };
         Ok(GLVertexAttribute {
+            gl: self,
             index,
             target,
             buffer,
