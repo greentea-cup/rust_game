@@ -28,23 +28,27 @@ pub struct GLProgram<'a> {
     program: glow::Program,
 }
 impl<'a> GLProgram<'a> {
+    fn raw_gl(&self) -> &glow::Context {
+        self.gl.raw()
+    }
+
     pub fn raw(&self) -> glow::NativeProgram {
         self.program
     }
 
     pub fn attach_shader(&self, shader: GLShader) {
-        unsafe { self.gl.raw().attach_shader(self.program, shader.shader) }
+        unsafe { self.raw_gl().attach_shader(self.program, shader.shader) }
     }
 
     pub fn detach_shader(&self, shader: GLShader) {
-        unsafe { self.gl.raw().detach_shader(self.program, shader.shader) }
+        unsafe { self.raw_gl().detach_shader(self.program, shader.shader) }
     }
 
     pub fn link(&self) -> Result<(), String> {
         unsafe {
-            self.gl.raw().link_program(self.program);
-            if !self.gl.raw().get_program_link_status(self.program) {
-                Err(self.gl.raw().get_program_info_log(self.program))
+            self.raw_gl().link_program(self.program);
+            if !self.raw_gl().get_program_link_status(self.program) {
+                Err(self.raw_gl().get_program_info_log(self.program))
             } else {
                 Ok(())
             }
@@ -52,7 +56,7 @@ impl<'a> GLProgram<'a> {
     }
 
     pub fn get_uniform<T: GLUniformType>(&'a self, name: &'a str) -> GLUniform<'a, T> {
-        let location = unsafe { self.gl.raw().get_uniform_location(self.program, name) };
+        let location = unsafe { self.raw_gl().get_uniform_location(self.program, name) };
         GLUniform::<T> {
             program: self,
             name,
@@ -64,7 +68,7 @@ impl<'a> GLProgram<'a> {
 impl Drop for GLProgram<'_> {
     fn drop(&mut self) {
         unsafe {
-            self.gl.raw().delete_program(self.program);
+            self.raw_gl().delete_program(self.program);
         }
     }
 }
@@ -80,11 +84,15 @@ pub struct GLVertexAttribute<'a> {
 }
 
 impl GLVertexAttribute<'_> {
+    fn raw_gl(&self) -> &glow::Context {
+        self.gl.raw()
+    }
+
     pub fn enable(&self, normalized: bool, stride: i32, offset: i32) {
         unsafe {
-            self.gl.raw().enable_vertex_attrib_array(self.index);
+            self.raw_gl().enable_vertex_attrib_array(self.index);
             self.gl.bind_buffer(self.target, self.buffer);
-            self.gl.raw().vertex_attrib_pointer_f32(
+            self.raw_gl().vertex_attrib_pointer_f32(
                 self.index,
                 self.size,
                 self.data_type.into(),
@@ -99,7 +107,7 @@ impl GLVertexAttribute<'_> {
             .write_to_buffer(self.target, self.buffer, data, usage);
     }
     pub fn disable(&self) {
-        unsafe { self.gl.raw().disable_vertex_attrib_array(self.index) }
+        unsafe { self.raw_gl().disable_vertex_attrib_array(self.index) }
     }
 }
 
@@ -125,12 +133,94 @@ impl<T: GLUniformType> GLUniform<'_, T> {
 }
 
 // TODO
+#[derive(Clone, Copy)]
 pub struct GLTexture<'a> {
     gl: &'a GLWrapper,
     texture: glow::Texture,
     target: GLTextureTarget,
 }
-impl GLTexture<'_> {}
+pub struct GLTextureData<'a> {
+    pub level_of_detail: u32,
+    pub internal_format: GLColor,
+    pub width: u32,
+    pub height: u32,
+    pub data_format: GLColor,
+    pub data_type: GLType,
+    pub data: &'a [u8],
+}
+impl GLTexture<'_> {
+    fn raw_gl(&self) -> &glow::Context {
+        self.gl.raw()
+    }
+    pub fn bind(&self) {
+        unsafe {
+            self.raw_gl()
+                .bind_texture(self.target.into(), Some(self.texture));
+        }
+    }
+
+    pub fn write(&self, data: GLTextureData<'_>) {
+        self.bind();
+        let GLTextureData {
+            level_of_detail,
+            internal_format,
+            width,
+            height,
+            data_format,
+            data_type,
+            data,
+        } = data;
+        unsafe {
+            self.raw_gl().tex_image_2d(
+                self.target.into(),
+                level_of_detail as i32,
+                internal_format.into(),
+                width as i32,
+                height as i32,
+                0, // border
+                data_format.into(),
+                data_type.into(),
+                Some(data),
+            )
+        }
+    }
+
+    pub fn min_filter(&self, value: GLTextureMinFilter) {
+        self.parameter_i32(GLTextureParameter::MinFilter, value.into());
+    }
+    pub fn mag_filter(&self, value: GLTextureMagFilter) {
+        self.parameter_i32(GLTextureParameter::MagFilter, value.into());
+    }
+
+    pub fn parameter_i32(&self, param: GLTextureParameter, value: i32) {
+        self.bind();
+        unsafe {
+            self.raw_gl()
+                .tex_parameter_i32(self.target.into(), param.into(), value)
+        }
+    }
+    pub fn parameter_f32(&self, param: GLTextureParameter, value: f32) {
+        self.bind();
+        unsafe {
+            self.raw_gl()
+                .tex_parameter_f32(self.target.into(), param.into(), value);
+        }
+    }
+    pub fn parameter_i32s(&self, param: GLTextureParameter, values: &[i32]) {
+        self.bind();
+        unsafe {
+            self.raw_gl()
+                .tex_parameter_i32_slice(self.target.into(), param.into(), values)
+        }
+    }
+    pub fn parameter_f32s(&self, param: GLTextureParameter, values: &[f32]) {
+        self.bind();
+        unsafe {
+            self.raw_gl()
+                .tex_parameter_f32_slice(self.target.into(), param.into(), values)
+        }
+    }
+}
 
 #[allow(unused)]
 impl GLWrapper {

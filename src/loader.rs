@@ -1,6 +1,5 @@
 use crate::gl_wrapper::*;
 use crate::glmc::*;
-use glow::HasContext;
 use tobj::*;
 
 pub struct ComputedMatrices {
@@ -141,10 +140,10 @@ pub unsafe fn bake_meshes(models: Vec<Model>) -> BakedMeshes {
     }
 }
 
-pub unsafe fn load_textures(
-    gl: &GLWrapper,
+pub unsafe fn load_textures<'a>(
+    gl: &'a GLWrapper,
     materials: &Vec<Material>,
-) -> Vec<Option<glow::Texture>> {
+) -> Vec<Option<GLTexture<'a>>> {
     use std::fs::File;
     use std::io::BufReader;
     let mut textures = Vec::new();
@@ -155,8 +154,9 @@ pub unsafe fn load_textures(
         }
         let tx_path = tx0.diffuse_texture.as_ref().unwrap();
         // NOTE consider safety
-        let tx = Some(gl.raw().create_texture().unwrap());
-        gl.raw().bind_texture(glow::TEXTURE_2D, tx);
+        let tx = gl.create_texture(GLTextureTarget::Texture2D).unwrap();
+        tx.bind();
+
         let txr_img = image::load(
             BufReader::new(File::open(tx_path).unwrap()),
             image::ImageFormat::Png,
@@ -164,32 +164,24 @@ pub unsafe fn load_textures(
         .unwrap()
         .into_rgba8();
         let txr_data = txr_img.as_flat_samples().samples;
-        let (w, h) = (txr_img.width() as i32, txr_img.height() as i32);
-        gl.raw().tex_image_2d(
-            glow::TEXTURE_2D,
-            0, // level of detail TODO: mipmapping
-            glow::RGBA as i32,
-            w,
-            h,
-            0, // border. literally must be zero. always
-            glow::RGBA,
-            glow::UNSIGNED_BYTE,
-            Some(txr_data),
+        let (w, h) = (txr_img.width(), txr_img.height());
+
+        tx.write(
+            GLTextureData {
+                level_of_detail: 0,
+            internal_format: GLColor::RGBA,
+            width:w,
+            height:h, 
+            data_format: GLColor::RGBA,
+            data_type: GLType::UnsignedByte,
+            data: txr_data,}
         );
         // NOTE: releated to mipmapping
         // see glTexParameter#GL_TEXTURE_MIN_FILTER, glTexParameter#GL_TEXTURE_MAG_FILTER
         // (khronos)
-        gl.raw().tex_parameter_i32(
-            glow::TEXTURE_2D,
-            glow::TEXTURE_MAG_FILTER,
-            glow::NEAREST as i32,
-        );
-        gl.raw().tex_parameter_i32(
-            glow::TEXTURE_2D,
-            glow::TEXTURE_MIN_FILTER,
-            glow::NEAREST as i32,
-        );
-        textures.push(tx);
+        tx.mag_filter(GLTextureMagFilter::Nearest);
+        tx.min_filter(GLTextureMinFilter::Nearest);
+        textures.push(Some(tx));
     }
     textures
 }

@@ -159,30 +159,21 @@ unsafe fn main0() {
             (res, w, h)
         };
         // TODO: adjust uvs for text plane(s)
-        let ttx = Some(gl.raw().create_texture().unwrap());
-        gl.raw().bind_texture(glow::TEXTURE_2D, ttx);
-        gl.raw().tex_image_2d(
-            glow::TEXTURE_2D,
-            0,
-            glow::RGB as i32,
-            w as i32,
-            h as i32,
-            0,
-            glow::RGB,
-            glow::UNSIGNED_BYTE,
-            Some(&text_texture),
-        );
-        gl.raw().tex_parameter_i32(
-            glow::TEXTURE_2D,
-            glow::TEXTURE_MAG_FILTER,
-            glow::NEAREST as i32,
-        );
-        gl.raw().tex_parameter_i32(
-            glow::TEXTURE_2D,
-            glow::TEXTURE_MIN_FILTER,
-            glow::NEAREST as i32,
-        );
-        textures[text_material_id] = ttx;
+        let ttx = gl.create_texture(GLTextureTarget::Texture2D).unwrap();
+        // let ttx = Some(gl.raw().create_texture().unwrap());
+        ttx.bind();
+        ttx.write(GLTextureData {
+            level_of_detail: 0,
+            internal_format: GLColor::RGB,
+            width: w as u32,
+            height: h as u32,
+            data_format: GLColor::RGB,
+            data_type: GLType::UnsignedByte,
+            data: &text_texture,
+        });
+        ttx.mag_filter(GLTextureMagFilter::Nearest);
+        ttx.min_filter(GLTextureMinFilter::Nearest);
+        textures[text_material_id] = Some(ttx);
     }
 
     let baked = bake_meshes(models);
@@ -238,7 +229,14 @@ unsafe fn main0() {
             view: view_mat,
             right,
             front,
-        } = compute_matrices(state.position, state.rotation, fov, aspect_ratio, z_near, z_far);
+        } = compute_matrices(
+            state.position,
+            state.rotation,
+            fov,
+            aspect_ratio,
+            z_near,
+            z_far,
+        );
 
         gl.raw()
             .clear(glow::COLOR_BUFFER_BIT | glow::DEPTH_BUFFER_BIT);
@@ -266,7 +264,10 @@ unsafe fn main0() {
         for (i, &tx) in textures.iter().enumerate() {
             sampler_u.set(i as i32);
             gl.raw().active_texture(glow::TEXTURE0 + i as u32);
-            gl.raw().bind_texture(glow::TEXTURE_2D, tx);
+            if tx.is_some() {
+                tx.unwrap().bind()
+            }
+            // gl.raw().bind_texture(glow::TEXTURE_2D, tx);
             gl.raw().draw_elements(
                 glow::TRIANGLES,
                 baked.lengths[i],

@@ -1,5 +1,15 @@
 use super::*;
 
+macro_rules! signed_from {
+    ($type:ty) => {
+        impl From<$type> for i32 {
+            fn from(value: $type) -> i32 {
+                Into::<u32>::into(value) as i32
+            }
+        }
+    };
+}
+
 #[derive(Clone, Copy)]
 pub enum GLBufferTarget {
     Array,
@@ -199,6 +209,7 @@ uniform_impl!(&[Mat2], uniform_matrix_2_f32_slice, v, transpose; mat2_slice_as_s
 uniform_impl!(&[Mat3], uniform_matrix_3_f32_slice, v, transpose; mat3_slice_as_slice(v));
 uniform_impl!(&[Mat4], uniform_matrix_4_f32_slice, v, transpose; mat4_slice_as_slice(v));
 
+#[derive(Clone, Copy)]
 pub enum GLTextureTarget {
     Texture1D,
     Texture2D,
@@ -214,3 +225,112 @@ impl From<GLTextureTarget> for u32 {
         }
     }
 }
+
+#[derive(Clone, Copy)]
+pub enum GLColor {
+    RGB,
+    RGBA,
+    BGR,
+    BGRA,
+}
+impl From<GLColor> for u32 {
+    fn from(value: GLColor) -> u32 {
+        use GLColor::*;
+        match value {
+            RGB => glow::RGB,
+            RGBA => glow::RGBA,
+            BGR => glow::BGR,
+            BGRA => glow::BGRA,
+        }
+    }
+}
+signed_from!(GLColor);
+
+#[derive(Clone, Copy)]
+pub enum GLTextureParameter {
+    DSTMode,
+    BaseLevel,
+    CompareFunc,
+    CompareMode,
+    LodBias,
+    MinFilter,
+    MagFilter,
+    MinLod,
+    MaxLod,
+    MaxLevel,
+    SwizzleR,
+    SwizzleG,
+    SwizzleB,
+    SwizzleA,
+    WrapS,
+    WrapT,
+    WrapR,
+    BorderColor,
+    SwizzleRGBA,
+}
+impl From<GLTextureParameter> for u32 {
+    fn from(value: GLTextureParameter) -> u32 {
+        use GLTextureParameter::*;
+        match value {
+            DSTMode => glow::DEPTH_STENCIL_TEXTURE_MODE,
+            BaseLevel => glow::TEXTURE_BASE_LEVEL,
+            CompareFunc => glow::TEXTURE_COMPARE_FUNC,
+            CompareMode => glow::TEXTURE_COMPARE_MODE,
+            LodBias => glow::TEXTURE_LOD_BIAS,
+            MinFilter => glow::TEXTURE_MIN_FILTER,
+            MagFilter => glow::TEXTURE_MAG_FILTER,
+            MinLod => glow::TEXTURE_MIN_LOD,
+            MaxLod => glow::TEXTURE_MAX_LOD,
+            MaxLevel => glow::TEXTURE_MAX_LEVEL,
+            SwizzleR => glow::TEXTURE_SWIZZLE_R,
+            SwizzleG => glow::TEXTURE_SWIZZLE_G,
+            SwizzleB => glow::TEXTURE_SWIZZLE_G,
+            SwizzleA => glow::TEXTURE_SWIZZLE_A,
+            WrapS => glow::TEXTURE_WRAP_S,
+            WrapT => glow::TEXTURE_WRAP_T,
+            WrapR => glow::TEXTURE_WRAP_R,
+            BorderColor => glow::TEXTURE_BORDER_COLOR,
+            SwizzleRGBA => glow::TEXTURE_SWIZZLE_RGBA,
+        }
+    }
+}
+
+#[derive(Clone, Copy)]
+pub enum GLTextureMinFilter {
+    Nearest,
+    Linear,
+    NN,
+    NL,
+    LN,
+    LL,
+}
+impl From<GLTextureMinFilter> for u32 {
+    fn from(value: GLTextureMinFilter) -> u32 {
+        use GLTextureMinFilter::*;
+        match value {
+            Nearest => glow::NEAREST,
+            Linear => glow::LINEAR,
+            NN => glow::NEAREST_MIPMAP_NEAREST,
+            NL => glow::NEAREST_MIPMAP_LINEAR,
+            LN => glow::LINEAR_MIPMAP_NEAREST,
+            LL => glow::LINEAR_MIPMAP_LINEAR,
+        }
+    }
+}
+signed_from!(GLTextureMinFilter);
+
+#[derive(Clone, Copy)]
+pub enum GLTextureMagFilter {
+    Nearest,
+    Linear,
+}
+impl From<GLTextureMagFilter> for u32 {
+    fn from(value: GLTextureMagFilter) -> u32 {
+        use GLTextureMagFilter::*;
+        match value {
+            Nearest => glow::NEAREST,
+            Linear => glow::LINEAR,
+        }
+    }
+}
+signed_from!(GLTextureMagFilter);
