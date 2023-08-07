@@ -138,17 +138,12 @@ pub struct GLTexture<'a> {
     gl: &'a GLWrapper,
     texture: glow::Texture,
     target: GLTextureTarget,
-}
-pub struct GLTextureData<'a> {
-    pub level_of_detail: u32,
-    pub internal_format: GLColor,
-    pub width: u32,
-    pub height: u32,
-    pub data_format: GLColor,
-    pub data_type: GLType,
-    pub data: &'a [u8],
+    internal_format: GLColor,
 }
 impl GLTexture<'_> {
+    pub fn raw(&self) -> glow::Texture {
+        self.texture
+    }
     fn raw_gl(&self) -> &glow::Context {
         self.gl.raw()
     }
@@ -159,22 +154,21 @@ impl GLTexture<'_> {
         }
     }
 
-    pub fn write(&self, data: GLTextureData<'_>) {
+    pub fn write(
+        &self,
+        level_of_detail: u32,
+        width: u32,
+        height: u32,
+        data_format: GLColor,
+        data_type: GLType,
+        data: &[u8],
+    ) {
         self.bind();
-        let GLTextureData {
-            level_of_detail,
-            internal_format,
-            width,
-            height,
-            data_format,
-            data_type,
-            data,
-        } = data;
         unsafe {
             self.raw_gl().tex_image_2d(
                 self.target.into(),
                 level_of_detail as i32,
-                internal_format.into(),
+                self.internal_format.into(),
                 width as i32,
                 height as i32,
                 0, // border
@@ -182,6 +176,29 @@ impl GLTexture<'_> {
                 data_type.into(),
                 Some(data),
             )
+        }
+    }
+    pub fn clear(
+        &self,
+        level_of_detail: u32,
+        width: u32,
+        height: u32,
+        data_format: GLColor,
+        data_type: GLType,
+    ) {
+        self.bind();
+        unsafe {
+            self.raw_gl().tex_image_2d(
+                self.target.into(),
+                level_of_detail as i32,
+                self.internal_format.into(),
+                width as i32,
+                height as i32,
+                0, // border
+                data_format.into(),
+                data_type.into(),
+                None,
+            );
         }
     }
 
@@ -333,12 +350,17 @@ impl GLWrapper {
         }
     }
 
-    pub fn create_texture(&self, target: GLTextureTarget) -> Result<GLTexture, String> {
+    pub fn create_texture(
+        &self,
+        target: GLTextureTarget,
+        internal_format: GLColor,
+    ) -> Result<GLTexture, String> {
         let texture = unsafe { self.gl.create_texture()? };
         Ok(GLTexture {
             gl: self,
             texture,
             target,
+            internal_format,
         })
     }
 }

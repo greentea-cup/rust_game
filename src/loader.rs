@@ -3,9 +3,8 @@ use crate::glmc::*;
 use tobj::*;
 
 pub struct ComputedMatrices {
-    pub mvp: glm::Mat4,
-    pub model: glm::Mat4,
     pub view: glm::Mat4,
+    pub projection: glm::Mat4,
     pub right: glm::Vec3,
     pub front: glm::Vec3,
 }
@@ -45,18 +44,15 @@ pub fn compute_matrices(
     let front = -glm::cross(right, glm::vec3(0.0, 1.0, 0.0));
 
     let view = glm::ext::look_at(position, position + direction, up);
-    let model = MAT4_ONE;
-    let mvp = projection * view * model;
     ComputedMatrices {
-        mvp,
-        model,
         view,
+        projection,
         right,
         front,
     }
 }
 
-pub unsafe fn bake_meshes(models: Vec<Model>) -> BakedMeshes {
+pub unsafe fn bake_meshes(models: Vec<Model>, simple_mats: &[usize]) -> BakedMeshes {
     let mut models = models
         .iter()
         .filter(|m| {
@@ -68,7 +64,14 @@ pub unsafe fn bake_meshes(models: Vec<Model>) -> BakedMeshes {
             }
         })
         .collect::<Vec<_>>();
-    models.sort_by_cached_key(|m| m.mesh.material_id);
+    models.sort_by_cached_key(|m| {
+        (
+            // false < true => false is first
+            // so materials from simple_mats will be processed first
+            !simple_mats.contains(&m.mesh.material_id.unwrap()),
+            m.mesh.material_id,
+        )
+    });
     let mut vertices = Vec::new();
     let mut offsets = Vec::new();
     let mut lengths = Vec::new();
@@ -142,19 +145,21 @@ pub unsafe fn bake_meshes(models: Vec<Model>) -> BakedMeshes {
 
 pub unsafe fn load_textures<'a>(
     gl: &'a GLWrapper,
-    materials: &Vec<Material>,
-) -> Vec<Option<GLTexture<'a>>> {
+    materials: &[Material],
+) -> std::collections::HashMap<usize, GLTexture<'a>> {
+    use std::collections::HashMap;
     use std::fs::File;
     use std::io::BufReader;
-    let mut textures = Vec::new();
-    for tx0 in materials {
+    let mut textures = HashMap::new();
+    for (i, tx0) in materials.iter().enumerate() {
         if tx0.diffuse_texture.is_none() {
-            textures.push(None);
             continue;
         }
         let tx_path = tx0.diffuse_texture.as_ref().unwrap();
         // NOTE consider safety
-        let tx = gl.create_texture(GLTextureTarget::Texture2D).unwrap();
+        let tx = gl
+            .create_texture(GLTextureTarget::Texture2D, GLColor::Rgba)
+            .unwrap();
         tx.bind();
 
         let txr_img = image::load(
@@ -166,22 +171,13 @@ pub unsafe fn load_textures<'a>(
         let txr_data = txr_img.as_flat_samples().samples;
         let (w, h) = (txr_img.width(), txr_img.height());
 
-        tx.write(
-            GLTextureData {
-                level_of_detail: 0,
-            internal_format: GLColor::RGBA,
-            width:w,
-            height:h, 
-            data_format: GLColor::RGBA,
-            data_type: GLType::UnsignedByte,
-            data: txr_data,}
-        );
+        tx.write(0, w, h, GLColor::Rgba, GLType::UnsignedByte, txr_data);
         // NOTE: releated to mipmapping
         // see glTexParameter#GL_TEXTURE_MIN_FILTER, glTexParameter#GL_TEXTURE_MAG_FILTER
         // (khronos)
         tx.mag_filter(GLTextureMagFilter::Nearest);
         tx.min_filter(GLTextureMinFilter::Nearest);
-        textures.push(Some(tx));
+        textures.insert(i, tx);
     }
     textures
 }
@@ -218,7 +214,7 @@ pub unsafe fn init_window(width: u32, height: u32) -> Result<InitializedWindow, 
     let gl_attr = video.gl_attr();
     // init attrs
     gl_attr.set_context_profile(sdl2::video::GLProfile::Core);
-    gl_attr.set_context_version(4, 0);
+    gl_attr.set_context_version(4, 2);
     gl_attr.set_context_flags().forward_compatible().set();
     // create window
     let window = video

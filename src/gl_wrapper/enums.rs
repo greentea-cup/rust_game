@@ -228,19 +228,27 @@ impl From<GLTextureTarget> for u32 {
 
 #[derive(Clone, Copy)]
 pub enum GLColor {
-    RGB,
-    RGBA,
-    BGR,
-    BGRA,
+    Rgb,
+    Rgba,
+    Bgr,
+    Bgra,
+    Rgba16f,
+    R8,
+    Red,
+    DepthComponent,
 }
 impl From<GLColor> for u32 {
     fn from(value: GLColor) -> u32 {
         use GLColor::*;
         match value {
-            RGB => glow::RGB,
-            RGBA => glow::RGBA,
-            BGR => glow::BGR,
-            BGRA => glow::BGRA,
+            Rgb => glow::RGB,
+            Rgba => glow::RGBA,
+            Bgr => glow::BGR,
+            Bgra => glow::BGRA,
+            Rgba16f => glow::RGBA16F,
+            R8 => glow::R8,
+            Red => glow::RED,
+            DepthComponent => glow::DEPTH_COMPONENT,
         }
     }
 }
