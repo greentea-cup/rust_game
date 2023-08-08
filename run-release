@@ -1,0 +1,2 @@
+#!/bin/bash
+cargo b --release && clear && cargo r --release

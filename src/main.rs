@@ -20,7 +20,7 @@ fn main() {
             },
         ),
         (
-            vec3(0.5, 0.5, 0.),
+            vec3(1., 1., 0.),
             ModelMatrixInput {
                 position: vec3(1., 0., 1.),
                 rotation: vec3(0., 0., 0.),
@@ -54,13 +54,47 @@ fn main() {
             },
         ),
     ];
+    let (models, materials) = load_obj(
+        std::path::Path::new("./data/objects/red_crystal.obj"),
+        &tobj::LoadOptions {
+            single_index: true,
+            triangulate: true,
+            ..Default::default()
+        },
+    )
+    .unwrap();
+    let materials = materials.unwrap();
+
     unsafe { main0(opaque_quads, tr_quads).unwrap() }
 }
 
-unsafe fn main0(opaque: &[(glm::Vec3, ModelMatrixInput)], transparent: &[(glm::Vec4, ModelMatrixInput)]) -> Result<(), String> {
-    let (width, height): (u32, u32) = (800, 600);
+struct PlainMesh {
+    vertices: Vec<f32>,
+    normals: Vec<f32>,
+    indices: Vec<u32>,
+}
+
+struct TexturedMesh {
+    vertices: Vec<f32>,
+    normals: Vec<f32>,
+    uvs: Vec<f32>,
+    inidices: Vec<u32>,
+}
+
+enum PreparedModel {
+    OpaqueColored(PlainMesh),
+    TransparentColored(PlainMesh),
+    OpaqueTextured(TexturedMesh),
+    TransparentTextured(TexturedMesh),
+}
+
+unsafe fn main0(
+    opaque: &[(glm::Vec3, ModelMatrixInput)],
+    transparent: &[(glm::Vec4, ModelMatrixInput)],
+) -> Result<(), String> {
+    let (mut width, mut height): (u32, u32) = (800, 600);
     let start = std::time::SystemTime::now();
-    let aspect_ratio = width as f32 / height as f32;
+    let mut aspect_ratio = width as f32 / height as f32;
     let fov = glm::radians(45.);
     // sdl2 and gl context
     let InitializedWindow {
@@ -68,8 +102,7 @@ unsafe fn main0(opaque: &[(glm::Vec3, ModelMatrixInput)], transparent: &[(glm::V
         sdl,
         window,
         mut event_loop,
-        #[allow(unused)]
-        gl_context,
+        gl_context: _gl_context, /* NOTE: should not drop */
     } = init_window(width, height)?;
 
     macro_rules! glerr {
@@ -129,169 +162,125 @@ unsafe fn main0(opaque: &[(glm::Vec3, ModelMatrixInput)], transparent: &[(glm::V
 
     let quad_vertices: &[f32] = &[
         // x, y, z, u, v
-        -1.0, -1.0, 0.0, 0.0, 0.0, 1.0, -1.0, 0.0, 1.0, 0.0, 1.0, 1.0, 0.0, 1.0, 1.0, 1.0, 1.0, 0.0,
-        1.0, 1.0, -1.0, 1.0, 0.0, 0.0, 1.0, -1.0, -1.0, 0.0, 0.0, 0.0,
+        -1.0, -1.0, 0.0, 0.0, 0.0, //
+        1.0, -1.0, 0.0, 1.0, 0.0, //
+        1.0, 1.0, 0.0, 1.0, 1.0, //
+        1.0, 1.0, 0.0, 1.0, 1.0, //
+        -1.0, 1.0, 0.0, 0.0, 1.0, //
+        -1.0, -1.0, 0.0, 0.0, 0.0, //
     ];
+    let screen_quad_data: &[f32] = &[
+        // x, y, z, u, v
+        -1.0, -1.0, 0.0, 0.0, 0.0, //
+        1.0, -1.0, 0.0, 1.0, 0.0, //
+        1.0, 1.0, 0.0, 1.0, 1.0, //
+        1.0, 1.0, 0.0, 1.0, 1.0, //
+        -1.0, 1.0, 0.0, 0.0, 1.0, //
+        -1.0, -1.0, 0.0, 0.0, 0.0, //
+    ];
+
     const F32S: i32 = std::mem::size_of::<f32>() as i32;
     let quad_vao = gl.create_vertex_array()?;
     let quad_vbo = gl.create_buffer()?;
-    gl.bind_vertex_array(Some(quad_vao));
-    gl.bind_buffer(glow::ARRAY_BUFFER, Some(quad_vbo));
-    gl.buffer_data_u8_slice(
-        glow::ARRAY_BUFFER,
-        memcast::as_bytes(quad_vertices),
-        glow::STATIC_DRAW,
-    );
-    gl.enable_vertex_attrib_array(0);
-    gl.vertex_attrib_pointer_f32(0, 3, glow::FLOAT, false, 5 * F32S, 0);
-    gl.enable_vertex_attrib_array(1);
-    gl.vertex_attrib_pointer_f32(1, 2, glow::FLOAT, false, 5 * F32S, 3 * F32S);
-    gl.bind_vertex_array(None);
+    {
+        gl.bind_vertex_array(Some(quad_vao));
+        gl.bind_buffer(glow::ARRAY_BUFFER, Some(quad_vbo));
+        gl.buffer_data_u8_slice(
+            glow::ARRAY_BUFFER,
+            memcast::as_bytes(quad_vertices),
+            glow::STATIC_DRAW,
+        );
+        gl.enable_vertex_attrib_array(0);
+        gl.vertex_attrib_pointer_f32(0, 3, glow::FLOAT, false, 5 * F32S, 0);
+        gl.enable_vertex_attrib_array(1);
+        gl.vertex_attrib_pointer_f32(1, 2, glow::FLOAT, false, 5 * F32S, 3 * F32S);
+        gl.bind_vertex_array(None);
+    }
+    let screen_vao = gl.create_vertex_array()?;
+    let screen_vbo = gl.create_buffer()?;
+    {
+        gl.bind_vertex_array(Some(screen_vao));
+        gl.bind_buffer(glow::ARRAY_BUFFER, Some(screen_vbo));
+        gl.buffer_data_u8_slice(
+            glow::ARRAY_BUFFER,
+            memcast::as_bytes(screen_quad_data),
+            glow::STATIC_DRAW,
+        );
+        gl.enable_vertex_attrib_array(0);
+        gl.vertex_attrib_pointer_f32(0, 3, glow::FLOAT, false, 5 * F32S, 0);
+        gl.enable_vertex_attrib_array(1);
+        gl.vertex_attrib_pointer_f32(1, 2, glow::FLOAT, false, 5 * F32S, 3 * F32S);
+        gl.bind_vertex_array(None);
+    }
 
     // set up framebuffers and their texture attachments
     let opaque_fbo = gl.create_framebuffer()?;
     let transparent_fbo = gl.create_framebuffer()?;
     // attachments opaque
     let opaque_tx = gl.create_texture()?;
-    gl.bind_texture(glow::TEXTURE_2D, Some(opaque_tx));
-    gl.tex_image_2d(
-        glow::TEXTURE_2D,
-        0,
-        glow::RGBA16F as i32,
-        width as i32,
-        height as i32,
-        0,
-        glow::RGBA,
-        glow::HALF_FLOAT,
-        None,
-    );
-    gl.tex_parameter_i32(
-        glow::TEXTURE_2D,
-        glow::TEXTURE_MIN_FILTER,
-        glow::LINEAR as i32,
-    );
-    gl.tex_parameter_i32(
-        glow::TEXTURE_2D,
-        glow::TEXTURE_MAG_FILTER,
-        glow::LINEAR as i32,
-    );
-    gl.bind_texture(glow::TEXTURE_2D, None);
-
+    let opaque_params = TextureParams {
+        internal_format: glow::RGBA16F,
+        format: glow::RGBA,
+        data_type: glow::HALF_FLOAT,
+        min_filter: Some(glow::LINEAR),
+        mag_filter: Some(glow::LINEAR),
+    };
+    reset_texture(&gl, opaque_tx, &opaque_params, width, height);
     let depth_tx = gl.create_texture()?;
-    gl.bind_texture(glow::TEXTURE_2D, Some(depth_tx));
-    gl.tex_image_2d(
-        glow::TEXTURE_2D,
-        0,
-        glow::DEPTH_COMPONENT as i32,
-        width as i32,
-        height as i32,
-        0,
-        glow::DEPTH_COMPONENT,
-        glow::FLOAT,
-        None,
+    let depth_params = TextureParams {
+        internal_format: glow::DEPTH_COMPONENT,
+        format: glow::DEPTH_COMPONENT,
+        data_type: glow::FLOAT,
+        min_filter: None,
+        mag_filter: None,
+    };
+    reset_texture(&gl, depth_tx, &depth_params, width, height);
+    let opaque_fbo_data = (
+        &[
+            (glow::COLOR_ATTACHMENT0, opaque_tx),
+            (glow::DEPTH_ATTACHMENT, depth_tx),
+        ],
+        None
     );
-    gl.bind_texture(glow::TEXTURE_2D, None);
-
-    gl.bind_framebuffer(glow::FRAMEBUFFER, Some(opaque_fbo));
-    gl.framebuffer_texture_2d(
-        glow::FRAMEBUFFER,
-        glow::COLOR_ATTACHMENT0,
-        glow::TEXTURE_2D,
-        Some(opaque_tx),
-        0,
-    );
-    gl.framebuffer_texture_2d(
-        glow::FRAMEBUFFER,
-        glow::DEPTH_ATTACHMENT,
-        glow::TEXTURE_2D,
-        Some(depth_tx),
-        0,
-    );
-    if gl.check_framebuffer_status(glow::FRAMEBUFFER) != glow::FRAMEBUFFER_COMPLETE {
-        eprintln!("Framebuffer error: line {}", line!());
-    }
-    glerr!();
-    gl.bind_framebuffer(glow::FRAMEBUFFER, None);
+    rebind_framebuffer(
+        &gl,
+        opaque_fbo,
+        opaque_fbo_data.0,
+        opaque_fbo_data.1,
+    )?;
     // attachments transparent
     let accum_tx = gl.create_texture()?;
-    gl.bind_texture(glow::TEXTURE_2D, Some(accum_tx));
-    gl.tex_image_2d(
-        glow::TEXTURE_2D,
-        0,
-        glow::RGBA16F as i32,
-        width as i32,
-        height as i32,
-        0,
-        glow::RGBA,
-        glow::HALF_FLOAT,
-        None,
-    );
-    gl.tex_parameter_i32(
-        glow::TEXTURE_2D,
-        glow::TEXTURE_MIN_FILTER,
-        glow::LINEAR as i32,
-    );
-    gl.tex_parameter_i32(
-        glow::TEXTURE_2D,
-        glow::TEXTURE_MAG_FILTER,
-        glow::LINEAR as i32,
-    );
-    gl.bind_texture(glow::TEXTURE_2D, None);
-
+    let accum_params = TextureParams {
+        internal_format: glow::RGBA16F,
+        format: glow::RGBA,
+        data_type: glow::HALF_FLOAT,
+        min_filter: Some(glow::LINEAR),
+        mag_filter: Some(glow::LINEAR),
+    };
+    reset_texture(&gl, accum_tx, &accum_params, width, height);
     let reveal_tx = gl.create_texture()?;
-    gl.bind_texture(glow::TEXTURE_2D, Some(reveal_tx));
-    gl.tex_image_2d(
-        glow::TEXTURE_2D,
-        0,
-        glow::R8 as i32,
-        width as i32,
-        height as i32,
-        0,
-        glow::RED,
-        glow::FLOAT,
-        None,
+    let reveral_params = TextureParams {
+        internal_format: glow::R8,
+        format: glow::RED,
+        data_type: glow::FLOAT,
+        min_filter: Some(glow::LINEAR),
+        mag_filter: Some(glow::LINEAR),
+    };
+    reset_texture(&gl, reveal_tx, &reveral_params, width, height);
+    let transparent_fbo_data = (
+        &[
+            (glow::COLOR_ATTACHMENT0, accum_tx),
+            (glow::COLOR_ATTACHMENT1, reveal_tx),
+            (glow::DEPTH_ATTACHMENT, depth_tx),
+        ],
+        Some::<&[u32]>(&[glow::COLOR_ATTACHMENT0, glow::COLOR_ATTACHMENT1]),
     );
-    gl.tex_parameter_i32(
-        glow::TEXTURE_2D,
-        glow::TEXTURE_MIN_FILTER,
-        glow::LINEAR as i32,
-    );
-    gl.tex_parameter_i32(
-        glow::TEXTURE_2D,
-        glow::TEXTURE_MAG_FILTER,
-        glow::LINEAR as i32,
-    );
-    gl.bind_texture(glow::TEXTURE_2D, None);
-
-    gl.bind_framebuffer(glow::FRAMEBUFFER, Some(transparent_fbo));
-    gl.framebuffer_texture_2d(
-        glow::FRAMEBUFFER,
-        glow::COLOR_ATTACHMENT0,
-        glow::TEXTURE_2D,
-        Some(accum_tx),
-        0,
-    );
-    gl.framebuffer_texture_2d(
-        glow::FRAMEBUFFER,
-        glow::COLOR_ATTACHMENT1,
-        glow::TEXTURE_2D,
-        Some(reveal_tx),
-        0,
-    );
-    gl.framebuffer_texture_2d(
-        glow::FRAMEBUFFER,
-        glow::DEPTH_ATTACHMENT,
-        glow::TEXTURE_2D,
-        Some(depth_tx),
-        0,
-    ); // from opaque
-    gl.draw_buffers(&[glow::COLOR_ATTACHMENT0, glow::COLOR_ATTACHMENT1]);
-    if gl.check_framebuffer_status(glow::FRAMEBUFFER) != glow::FRAMEBUFFER_COMPLETE {
-        eprintln!("Framebuffer error: line {}", line!());
-    }
-    glerr!();
-    gl.bind_framebuffer(glow::FRAMEBUFFER, None);
-
+    rebind_framebuffer(
+        &gl,
+        transparent_fbo,
+        transparent_fbo_data.0,
+        transparent_fbo_data.1,
+    )?;
     // transform matrices
     let opaque_objs = opaque
         .iter()
@@ -331,6 +320,24 @@ unsafe fn main0(opaque: &[(glm::Vec3, ModelMatrixInput)], transparent: &[(glm::V
     let tr_color_u = gl.get_uniform_location(shaders.solid, "color");
 
     'render: loop {
+        let (w, h) = state.window.size();
+        if (w != width) || (h != height) {
+            width = w;
+            height = h;
+            aspect_ratio = width as f32 / height as f32;
+            gl.viewport(0, 0, width as i32, height as i32);
+            let textures = [
+                (opaque_tx, &opaque_params),
+                (depth_tx, &depth_params),
+                (accum_tx, &accum_params),
+                (reveal_tx, &reveral_params),
+            ];
+            for (tx, params) in textures.iter() {
+                reset_texture(&gl, *tx, params, width, height);
+            }
+            rebind_framebuffer(&gl, opaque_fbo, opaque_fbo_data.0, opaque_fbo_data.1)?;
+            rebind_framebuffer(&gl, transparent_fbo, transparent_fbo_data.0, transparent_fbo_data.1)?;
+        }
         let (z_near, z_far) = (0.1, 100.0);
         let ComputedMatrices {
             view: view_mat,
@@ -351,6 +358,9 @@ unsafe fn main0(opaque: &[(glm::Vec3, ModelMatrixInput)], transparent: &[(glm::V
         // render
         // solid
         {
+            if state.culling {
+                gl.enable(glow::CULL_FACE);
+            }
             gl.enable(glow::DEPTH_TEST);
             gl.depth_func(glow::LESS);
             gl.depth_mask(true);
@@ -376,6 +386,7 @@ unsafe fn main0(opaque: &[(glm::Vec3, ModelMatrixInput)], transparent: &[(glm::V
         }
         // transparent
         {
+            gl.disable(glow::CULL_FACE);
             gl.depth_mask(false);
             gl.enable(glow::BLEND);
             gl.blend_func_draw_buffer(0, glow::ONE, glow::ONE);
@@ -414,7 +425,7 @@ unsafe fn main0(opaque: &[(glm::Vec3, ModelMatrixInput)], transparent: &[(glm::V
             gl.bind_texture(glow::TEXTURE_2D, Some(accum_tx));
             gl.active_texture(glow::TEXTURE1);
             gl.bind_texture(glow::TEXTURE_2D, Some(reveal_tx));
-            gl.bind_vertex_array(Some(quad_vao));
+            gl.bind_vertex_array(Some(screen_vao));
             gl.draw_arrays(glow::TRIANGLES, 0, 6);
             draw_calls += 1;
         }
@@ -433,7 +444,7 @@ unsafe fn main0(opaque: &[(glm::Vec3, ModelMatrixInput)], transparent: &[(glm::V
             // draw final screen quad
             gl.active_texture(glow::TEXTURE0);
             gl.bind_texture(glow::TEXTURE_2D, Some(opaque_tx));
-            gl.bind_vertex_array(Some(quad_vao));
+            gl.bind_vertex_array(Some(screen_vao));
             gl.draw_arrays(glow::TRIANGLES, 0, 6);
             draw_calls += 1;
         }
@@ -459,6 +470,76 @@ unsafe fn main0(opaque: &[(glm::Vec3, ModelMatrixInput)], transparent: &[(glm::V
         state.position = state.position + pos_diff * delta_time * speed;
         prev_time = current_time;
     }
+    Ok(())
+}
+
+struct TextureParams {
+    internal_format: u32,
+    format: u32,
+    data_type: u32,
+    min_filter: Option<u32>,
+    mag_filter: Option<u32>,
+}
+
+unsafe fn reset_texture(
+    gl: &glow::Context,
+    tx: glow::Texture,
+    params: &TextureParams,
+    width: u32,
+    height: u32,
+) {
+    gl.bind_texture(glow::TEXTURE_2D, Some(tx));
+    gl.tex_image_2d(
+        glow::TEXTURE_2D,
+        0,
+        params.internal_format as i32,
+        width as i32,
+        height as i32,
+        0,
+        params.format,
+        params.data_type,
+        None,
+    );
+    if let Some(min_filter) = params.min_filter {
+        gl.tex_parameter_i32(
+            glow::TEXTURE_2D,
+            glow::TEXTURE_MIN_FILTER,
+            min_filter as i32,
+        );
+    }
+    if let Some(mag_filter) = params.mag_filter {
+        gl.tex_parameter_i32(
+            glow::TEXTURE_2D,
+            glow::TEXTURE_MAG_FILTER,
+            mag_filter as i32,
+        );
+    }
+    gl.bind_texture(glow::TEXTURE_2D, None);
+}
+
+unsafe fn rebind_framebuffer(
+    gl: &glow::Context,
+    fbo: glow::Framebuffer,
+    textures: &[(u32, glow::Texture)],
+    draw_buffers: Option<&[u32]>,
+) -> Result<(), String> {
+    gl.bind_framebuffer(glow::FRAMEBUFFER, Some(fbo));
+    for (attachment, tx) in textures.iter() {
+        gl.framebuffer_texture_2d(
+            glow::FRAMEBUFFER,
+            *attachment,
+            glow::TEXTURE_2D,
+            Some(*tx),
+            0,
+        );
+    }
+    if let Some(draw_buffers) = draw_buffers {
+        gl.draw_buffers(draw_buffers);
+    }
+    if gl.check_framebuffer_status(glow::FRAMEBUFFER) != glow::FRAMEBUFFER_COMPLETE {
+        return Err(format!("GL Error {}", gl.get_error()));
+    }
+    gl.bind_framebuffer(glow::FRAMEBUFFER, None);
     Ok(())
 }
 
@@ -613,6 +694,28 @@ fn handle_event(event: sdl2::event::Event, state: &mut GameState) {
             state.rotation.y -= mouse_speed * yrel as f32;
         },
         Event::KeyDown {
+            scancode: Some(Scancode::Q),
+            ..
+        } => {
+            {
+                let glm::Vec2 { x, y } = state.rotation;
+                println!("Rotation: {} {}", x, y);
+            }
+            {
+                let glm::Vec3 { x, y, z } = state.position;
+                println!("Position: {} {} {}", x, y, z);
+            }
+            println!("Light power: {}", state.light_power);
+            {
+                let glm::IVec3 { x, y, z } = state.light_intensity;
+                println!("Light A{} D{} S{}", x, y, z);
+            }
+            println!("Draw depth: {}", state.draw_depth);
+            println!("CUlling: {}", state.culling);
+            println!("Draw calls: {}", state.draw_calls);
+        },
+
+        Event::KeyDown {
             scancode: Some(scancode),
             repeat: false,
             ..
@@ -634,16 +737,7 @@ fn handle_event(event: sdl2::event::Event, state: &mut GameState) {
                 Scancode::Space => state.wasd.y += 1,
                 Scancode::LShift => state.wasd.y -= 1,
                 Scancode::Tab => state.fast = true,
-                Scancode::G => {
-                    state.culling = !state.culling;
-                    unsafe {
-                        if state.culling {
-                            state.gl.enable(glow::CULL_FACE)
-                        } else {
-                            state.gl.disable(glow::CULL_FACE)
-                        }
-                    }
-                },
+                Scancode::G => state.culling = !state.culling,
                 Scancode::T => intensity!(x),
                 Scancode::Y => intensity!(y),
                 Scancode::U => intensity!(z),
@@ -667,26 +761,6 @@ fn handle_event(event: sdl2::event::Event, state: &mut GameState) {
                 Scancode::Tab => state.fast = false,
                 _ => {},
             }
-        },
-        Event::KeyDown {
-            scancode: Some(Scancode::Q),
-            ..
-        } => {
-            {
-                let glm::Vec2 { x, y } = state.rotation;
-                println!("Rotation: {} {}", x, y);
-            }
-            {
-                let glm::Vec3 { x, y, z } = state.position;
-                println!("Position: {} {} {}", x, y, z);
-            }
-            println!("Light power: {}", state.light_power);
-            {
-                let glm::IVec3 { x, y, z } = state.light_intensity;
-                println!("Light A{} D{} S{}", x, y, z);
-            }
-            println!("Draw depth: {}", state.draw_depth);
-            println!("Draw calls: {}", state.draw_calls);
         },
         Event::MouseWheel { y, .. } if state.captured => {
             state.light_power += 5.0 * y as f32;
