@@ -9,6 +9,15 @@ pub fn as_bytes<T>(data: &[T]) -> &[u8] {
     }
 }
 
+pub fn slice_cast<T, U>(data: &[T], len: usize) -> &[U] {
+    unsafe {
+        std::slice::from_raw_parts(
+            data.as_ptr() as *const U,
+            len
+        )
+    }
+}
+
 pub fn mat2_as_array(data: glm::Mat2) -> [f32; 4] {
     [data[0][0], data[0][1], data[1][0], data[1][1]]
 }

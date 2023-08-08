@@ -1,3 +1,4 @@
+#![allow(dead_code)]
 use crate::{gl_utils::link_program, glmc::*};
 use glow::HasContext;
 use tobj::*;
