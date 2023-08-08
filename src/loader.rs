@@ -1,5 +1,5 @@
-use crate::gl_wrapper::*;
-use crate::glmc::*;
+use crate::{gl_utils::link_program, glmc::*};
+use glow::HasContext;
 use tobj::*;
 
 pub struct ComputedMatrices {
@@ -19,11 +19,15 @@ pub struct BakedMeshes {
 }
 
 pub struct InitializedWindow {
-    pub gl: GLWrapper,
+    pub gl: glow::Context,
     pub sdl: sdl2::Sdl,
     pub window: sdl2::video::Window,
     pub event_loop: sdl2::EventPump,
+    #[allow(unused)]
+    pub gl_context: sdl2::video::GLContext,
 }
+
+pub type GLShaderType = u32;
 
 pub fn compute_matrices(
     position: glm::Vec3,
@@ -143,10 +147,11 @@ pub unsafe fn bake_meshes(models: Vec<Model>, simple_mats: &[usize]) -> BakedMes
     }
 }
 
-pub unsafe fn load_textures<'a>(
-    gl: &'a GLWrapper,
+#[cfg(xxx)]
+pub unsafe fn load_textures(
+    gl: &glow::Context,
     materials: &[Material],
-) -> std::collections::HashMap<usize, GLTexture<'a>> {
+) -> std::collections::HashMap<usize, glow::Texture> {
     use std::collections::HashMap;
     use std::fs::File;
     use std::io::BufReader;
@@ -182,30 +187,32 @@ pub unsafe fn load_textures<'a>(
     textures
 }
 
-pub unsafe fn load_shaders<'a>(
-    gl: &'a GLWrapper,
+pub unsafe fn load_shaders(
+    gl: &glow::Context,
     shaders: &[(GLShaderType, &std::path::Path)],
-) -> GLProgram<'a> {
+) -> Result<glow::Program, String> {
     use std::fs::read_to_string;
-    let program = gl.create_program().unwrap();
+    let program = gl.create_program()?;
 
     let mut shaders_compiled = Vec::with_capacity(shaders.len());
     for (shader_type, path) in shaders {
         let path_abs = path
             .canonicalize()
             .unwrap_or_else(|_| panic!("Cannot load shader: {}", path.display()));
-        let source = read_to_string(&path_abs).unwrap();
-        let shader = gl.create_shader(*shader_type, &source).unwrap();
-        program.attach_shader(shader);
+        let source = read_to_string(&path_abs).map_err(|e| e.to_string())?;
+        let shader = gl.create_shader(*shader_type)?;
+        gl.shader_source(shader, &source);
+        gl.compile_shader(shader);
+        gl.attach_shader(program, shader);
         shaders_compiled.push(shader);
     }
 
-    program.link().unwrap();
+    link_program(gl, program)?;
 
     for shader in shaders_compiled {
-        program.detach_shader(shader);
+        gl.detach_shader(program, shader);
     }
-    program
+    Ok(program)
 }
 
 pub unsafe fn init_window(width: u32, height: u32) -> Result<InitializedWindow, String> {
@@ -225,12 +232,12 @@ pub unsafe fn init_window(width: u32, height: u32) -> Result<InitializedWindow, 
         .map_err(|e| e.to_string())?;
     let gl_context = window.gl_create_context()?;
     let gl = glow::Context::from_loader_function(|s| video.gl_get_proc_address(s) as *const _);
-    let gl_wrapper = GLWrapper::new(gl, gl_context);
     let event_loop = sdl.event_pump()?;
     Ok(InitializedWindow {
-        gl: gl_wrapper,
+        gl,
         sdl,
         window,
         event_loop,
+        gl_context,
     })
 }

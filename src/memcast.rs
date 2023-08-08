@@ -1,3 +1,5 @@
+#![allow(dead_code)]
+
 pub fn as_bytes<T>(data: &[T]) -> &[u8] {
     unsafe {
         std::slice::from_raw_parts(
@@ -7,30 +9,26 @@ pub fn as_bytes<T>(data: &[T]) -> &[u8] {
     }
 }
 
-pub fn vec_as_slice<'a, T: glm::Primitive, U: glm::GenVec<T>>(data: &[U]) -> &'a [T] {
-    unsafe { std::slice::from_raw_parts(data.as_ptr() as *const T, data.len() * U::dim()) }
+pub fn mat2_as_array(data: glm::Mat2) -> [f32; 4] {
+    [
+        data[0][0], data[0][1],
+        data[1][0], data[1][1],
+    ]
 }
 
-pub fn mat2_as_slice<'a>(data: glm::Mat2) -> &'a [f32] {
-    unsafe { std::slice::from_raw_parts(data.as_array().as_ptr() as *const f32, 4) }
+pub fn mat3_as_array(data: glm::Mat3) -> [f32; 9] {
+    [
+        data[0][0], data[0][1], data[0][2],
+        data[1][0], data[1][1], data[1][2],
+        data[2][0], data[2][1], data[2][2],
+    ]
 }
 
-pub fn mat3_as_slice<'a>(data: glm::Mat3) -> &'a [f32] {
-    unsafe { std::slice::from_raw_parts(data.as_array().as_ptr() as *const f32, 9) }
-}
-
-pub fn mat4_as_slice<'a>(data: glm::Mat4) -> &'a [f32] {
-    unsafe { std::slice::from_raw_parts(data.as_array().as_ptr() as *const f32, 16) }
-}
-
-pub fn mat2_slice_as_slice<'a>(data: &[glm::Mat2]) -> &'a [f32] {
-    unsafe { std::slice::from_raw_parts(data.as_ptr() as *const f32, data.len() * 4) }
-}
-
-pub fn mat3_slice_as_slice<'a>(data: &[glm::Mat3]) -> &'a [f32] {
-    unsafe { std::slice::from_raw_parts(data.as_ptr() as *const f32, data.len() * 9) }
-}
-
-pub fn mat4_slice_as_slice<'a>(data: &[glm::Mat4]) -> &'a [f32] {
-    unsafe { std::slice::from_raw_parts(data.as_ptr() as *const f32, data.len() * 16) }
+pub fn mat4_as_array(data: glm::Mat4) -> [f32; 16] {
+    [
+        data[0][0], data[0][1], data[0][2], data[0][3],
+        data[1][0], data[1][1], data[1][2], data[1][3],
+        data[2][0], data[2][1], data[2][2], data[2][3],
+        data[3][0], data[3][1], data[3][2], data[3][3],
+    ]
 }
