@@ -4,42 +4,151 @@ mod loader;
 mod memcast;
 use crate::glmc::*;
 use crate::loader::*;
+use crate::gl_utils::*;
 use glow::HasContext;
 use tobj::load_obj;
 
 fn main() {
     use glm::vec3;
+    use std::path::Path;
     let objs_to_load = [
-        std::path::Path::new("./data/objects/box.obj"),
-        std::path::Path::new("./data/objects/red_crystal.obj"),
-        std::path::Path::new("./data/objects/green_crystal.obj"),
-        std::path::Path::new("./data/objects/blue_crystal.obj"),
+        Path::new("./data/objects/box.obj"),
+        Path::new("./data/objects/dice.obj"),
+        Path::new("./data/objects/red_crystal.obj"),
+        Path::new("./data/objects/green_crystal.obj"),
+        Path::new("./data/objects/blue_crystal.obj"),
     ];
-    let LoadedModels { mut models, materials } = prepare_objs(&objs_to_load).unwrap();
+    let LoadedModels {
+        mut models,
+        materials,
+    } = prepare_objs(&objs_to_load).unwrap();
+    let materials = prepare_materials(&materials);
     let baked = bake_meshes(&mut models, &materials);
-    let transforms = [
-        ModelMatrixInput {
-            position: vec3(-6., 0., 0.),
-            rotation: vec3(0., 0., 0.),
-            scale: vec3(1., 1., 1.),
-        },
-        ModelMatrixInput {
-            position: vec3(-3., 0., 0.),
-            rotation: vec3(0., 0., 0.),
-            scale: vec3(1., 1., 1.),
-        },
-        ModelMatrixInput {
-            position: vec3(0., 0., 0.),
-            rotation: vec3(0., 0., 0.),
-            scale: vec3(1., 1., 1.),
-        },
-        ModelMatrixInput {
-            position: vec3(3., 0., 0.),
-            rotation: vec3(0., 0., 0.),
-            scale: vec3(1., 1., 1.),
-        },
+    // TODO: split objs and object instances
+    // (relation one .obj to many in-game objects
+    let objects = [
+        (
+            0,
+            Transform::new(
+                vec3(-6., 0.0, 0.),
+                vec3(0., 0., 0.),
+                vec3(1., 1., 1.),
+            ),
+        ),
+        (
+            1,
+            Transform::new(
+                vec3(-9., 0., 0.),
+                vec3(0., 0., 0.),
+                vec3(1., 1., 1.),
+            ),
+        ),
+        (
+            2,
+            Transform::new(
+                vec3(0.25, 0., 1.),
+                vec3(0., 0., 0.),
+                vec3(1., 1., 1.),
+            ),
+        ),
+        (
+            3,
+            Transform::new(
+                vec3(0., -0.25, 0.25),
+                vec3(0., 0., 0.),
+                vec3(1., 1., 1.),
+            ),
+        ),
+        (
+            4,
+            Transform::new(
+                vec3(0.5, 0.25, 0.5),
+                vec3(0., 0., 0.),
+                vec3(1., 1., 1.),
+            ),
+        ),
     ];
-    unsafe { main0(baked, &materials, &transforms).unwrap() }
+    unsafe { main0(baked, &materials, &objects).unwrap() }
+}
+
+#[derive(Debug)]
+pub struct Material {
+    pub name: String,
+    pub ambient: [f32; 3],
+    pub diffuse: [f32; 3],
+    pub specular: [f32; 3],
+    pub shininess: f32,
+    pub dissolve: f32,
+    pub optical_density: f32,
+    pub ambient_texture: Option<Vec<u8>>,
+    pub diffuse_texture: Option<Vec<u8>>,
+    pub specular_texture: Option<Vec<u8>>,
+    pub normal_texture: Option<Vec<u8>>,
+    pub shininess_texture: Option<Vec<u8>>,
+    pub dissolve_texture: Option<Vec<u8>>,
+    pub illumination_model: u8,
+    pub is_transparent: bool,
+}
+
+fn has_alpha_channel(img: &image::DynamicImage) -> bool {
+    use image::DynamicImage;
+    matches!(
+        img,
+        DynamicImage::ImageLumaA8(_)
+            | DynamicImage::ImageLumaA16(_)
+            | DynamicImage::ImageRgba8(_)
+            | DynamicImage::ImageRgba16(_)
+            | DynamicImage::ImageRgba32F(_)
+    )
+}
+
+fn load_texture_data(path: Option<&std::path::Path>) -> Option<Vec<u8>> {
+    use std::fs::File;
+    use std::io::BufReader;
+    let file = File::open(path?).ok()?;
+    let reader = BufReader::new(file);
+    let img = image::load(reader, image::ImageFormat::Png).ok()?;
+    println!("{:?}", has_alpha_channel(&img));
+    Some(img.to_rgba8().into_flat_samples().samples)
+}
+
+fn prepare_materials(materials: &[tobj::Material]) -> Vec<Material> {
+    use std::path::Path;
+    let mut res = Vec::with_capacity(materials.len());
+    for mat in materials.iter() {
+        let ambient_texture = load_texture_data(mat.ambient_texture.as_ref().map(Path::new));
+        let diffuse_texture = load_texture_data(mat.diffuse_texture.as_ref().map(Path::new));
+        let specular_texture = load_texture_data(mat.specular_texture.as_ref().map(Path::new));
+        let normal_texture = load_texture_data(mat.normal_texture.as_ref().map(Path::new));
+        let dissolve_texture = load_texture_data(mat.dissolve_texture.as_ref().map(Path::new));
+        let shininess_texture = load_texture_data(mat.shininess_texture.as_ref().map(Path::new));
+        let ambient = mat.ambient.unwrap_or([1., 1., 1.]);
+        let diffuse = mat.diffuse.unwrap_or([1., 1., 1.]);
+        let specular = mat.specular.unwrap_or([1., 1., 1.]);
+        let shininess = mat.shininess.unwrap_or(200.);
+        let dissolve = mat.dissolve.unwrap_or(1.);
+        let is_transparent = dissolve < 1.;
+        let illumination_model = mat.illumination_model.unwrap_or(0);
+        let optical_density = mat.optical_density.unwrap_or(1.);
+        res.push(Material {
+            name: mat.name.as_str().to_owned(),
+            ambient,
+            diffuse,
+            specular,
+            shininess,
+            dissolve,
+            is_transparent,
+            ambient_texture,
+            diffuse_texture,
+            specular_texture,
+            dissolve_texture,
+            shininess_texture,
+            normal_texture,
+            illumination_model,
+            optical_density,
+        });
+    }
+    res
 }
 
 #[derive(Debug)]
@@ -55,9 +164,9 @@ struct BakedMeshData {
     transparent: Vec<usize>,
 }
 
-fn bake_meshes(models: &mut [ModelData], materials: &[tobj::Material]) -> BakedMeshData {
-    use std::collections::HashMap;
+fn bake_meshes(models: &mut [ModelData], materials: &[Material]) -> BakedMeshData {
     use std::collections::hash_map::Entry;
+    use std::collections::HashMap;
 
     let mut vertices = Vec::new();
     let mut uvs = Vec::new();
@@ -70,44 +179,36 @@ fn bake_meshes(models: &mut [ModelData], materials: &[tobj::Material]) -> BakedM
     let mut transparent = Vec::new();
     let mut idx = 0;
     let mut offset = 0;
+    let mut prev_mid = None;
 
     let mut cache = HashMap::new();
-    models.sort_by_cached_key(
-        |model| {
-            if model.material_id.is_some() {
-                let mid = model.material_id.unwrap();
-                let is_transparent = materials[mid].dissolve.is_some();
-                (true, is_transparent, mid)
-            }
-            else {
-                (false, false, 0)
-            }
+    // TODO: test glMultiDrawElements to specify spans of same-material objects
+    // instead of sorting data
+    models.sort_by_cached_key(|model| {
+        if model.material_id.is_some() {
+            let mid = model.material_id.unwrap();
+            let is_transparent = materials[mid].is_transparent;
+            (true, is_transparent, mid)
+        } else {
+            (false, false, 0)
         }
-    );
+    });
 
     for (model_index, model) in models.iter().enumerate() {
         println!("{}", model.name);
-        if let Some(mid) = model.material_id {
-            /*if materials[mid].diffuse_texture.is_some() {
-                println!("model {} with diffuse texture assumed to be potentially transparent", model.name);
+        {
+            let is_transparent =
+                model.material_id.is_some() && materials[model.material_id.unwrap()].is_transparent;
+            if is_transparent {
                 transparent.push(model_index);
-            }
-            else */if let Some(d) = materials[mid].dissolve {
-                if d == 1.0 {
-                    opaque.push(model_index);
-                }
-                else {
-                    transparent.push(model_index);
-                }
-            }
-            else {
+            } else {
                 opaque.push(model_index);
             }
         }
-        else {
-            opaque.push(model_index);
+        if material_ids.is_empty() || (prev_mid != model.material_id) {
+            prev_mid = model.material_id;
+            material_ids.push(model.material_id);
         }
-        material_ids.push(model.material_id);
 
         const F32S: usize = std::mem::size_of::<f32>();
         let m = &model.mesh;
@@ -121,7 +222,7 @@ fn bake_meshes(models: &mut [ModelData], materials: &[tobj::Material]) -> BakedM
         let b_vs = memcast::slice_cast::<f32, [u8; 3 * F32S]>(&m.vertices, len);
         let b_us = memcast::slice_cast::<f32, [u8; 2 * F32S]>(&m.uvs, len);
         let b_ns = memcast::slice_cast::<f32, [u8; 3 * F32S]>(&m.normals, len);
-        
+
         for i in &m.indices {
             let i = *i as usize;
             let key = (b_vs[i], b_us[i], b_ns[i]);
@@ -193,7 +294,11 @@ struct LoadedModels {
 }
 
 fn prepare_objs(paths: &[&std::path::Path]) -> Result<LoadedModels, String> {
-    let load_opts = tobj::LoadOptions {single_index: true, triangulate: true, ..Default::default()};
+    let load_opts = tobj::LoadOptions {
+        single_index: true,
+        triangulate: true,
+        ..Default::default()
+    };
     let mut loaded_models = Vec::with_capacity(paths.len());
     let mut loaded_materials = Vec::with_capacity(paths.len());
     for path in paths {
@@ -210,26 +315,26 @@ fn prepare_objs(paths: &[&std::path::Path]) -> Result<LoadedModels, String> {
             let mid = model.mesh.material_id;
             let res_model = ModelData {
                 mesh,
-                material_id: mid.map(|i| i+len),
+                material_id: mid.map(|i| i + len),
                 name: model.name,
             };
             loaded_models.push(res_model);
         }
         loaded_materials.append(&mut materials);
     }
-    Ok(LoadedModels{models: loaded_models, materials: loaded_materials})
+    Ok(LoadedModels {
+        models: loaded_models,
+        materials: loaded_materials,
+    })
 }
 
 unsafe fn main0(
     models: BakedMeshData,
-    materials: &[tobj::Material],
-    transforms: &[ModelMatrixInput],
+    materials: &[Material],
+    objects: &[(usize, Transform)],
 ) -> Result<(), String> {
-    let (mut width, mut height): (u32, u32) = (800, 600);
     let start = std::time::SystemTime::now();
-    let mut aspect_ratio = width as f32 / height as f32;
-    let fov = glm::radians(45.);
-    // sdl2 and gl context
+    let (mut width, mut height): (u32, u32) = (800, 600);
     let InitializedWindow {
         gl,
         sdl,
@@ -244,85 +349,11 @@ unsafe fn main0(
     gl.enable(glow::DEBUG_OUTPUT);
     gl.debug_message_callback(debug_message_callback);
 
-    struct SolidShaderUniforms {
-        mvp: Option<glow::UniformLocation>,
-        ambient_color: Option<glow::UniformLocation>,
-        diffuse_color: Option<glow::UniformLocation>,
-        specular_color: Option<glow::UniformLocation>,
-        diffuse_texture: Option<glow::UniformLocation>,
-        opts: Option<glow::UniformLocation>,
-    }
+    let mut aspect_ratio = width as f32 / height as f32;
+    let fov = glm::radians(45.);
     
-    struct TransparentShaderUniforms {
-        mvp: Option<glow::UniformLocation>,
-        ambient_color: Option<glow::UniformLocation>,
-        diffuse_color: Option<glow::UniformLocation>,
-        specular_color: Option<glow::UniformLocation>,
-        diffuse_texture: Option<glow::UniformLocation>,
-        dissolve: Option<glow::UniformLocation>,
-        opts: Option<glow::UniformLocation>,
-    }
-    
-    struct Shaders {
-        solid: glow::Program,
-        transparent: glow::Program,
-        composite: glow::Program,
-        screen: glow::Program,
-    }
-    let (shaders, solid_u, transparent_u) = {
-        let solid_shaders = &[
-            (glow::VERTEX_SHADER, "./data/shaders/solid_v.glsl"),
-            (glow::FRAGMENT_SHADER, "./data/shaders/solid_f.glsl"),
-        ]
-        .map(|(t, p)| (t, std::path::Path::new(p)));
-        let transparent_shaders = &[
-            (glow::VERTEX_SHADER, "./data/shaders/transparent_v.glsl"),
-            (glow::FRAGMENT_SHADER, "./data/shaders/transparent_f.glsl"),
-        ]
-        .map(|(t, p)| (t, std::path::Path::new(p)));
-        let composite_shaders = &[
-            (glow::VERTEX_SHADER, "./data/shaders/composite_v.glsl"),
-            (glow::FRAGMENT_SHADER, "./data/shaders/composite_f.glsl"),
-        ]
-        .map(|(t, p)| (t, std::path::Path::new(p)));
-        let screen_shaders = &[
-            (glow::VERTEX_SHADER, "./data/shaders/screen_v.glsl"),
-            (glow::FRAGMENT_SHADER, "./data/shaders/screen_f.glsl"),
-        ]
-        .map(|(t, p)| (t, std::path::Path::new(p)));
 
-        let solid = load_shaders(&gl, solid_shaders)?;
-        let transparent = load_shaders(&gl, transparent_shaders)?;
-        let composite = load_shaders(&gl, composite_shaders)?;
-        let screen = load_shaders(&gl, screen_shaders)?;
-        let solid_u = SolidShaderUniforms {
-            mvp: gl.get_uniform_location(solid, "mvp"),
-            ambient_color: gl.get_uniform_location(solid, "ambient_color"),
-            diffuse_color: gl.get_uniform_location(solid, "diffuse_color"),
-            specular_color: gl.get_uniform_location(solid, "specular_color"),
-            diffuse_texture: gl.get_uniform_location(solid, "diffuse_texture"),
-            opts: gl.get_uniform_location(solid, "opts"),
-        };
-        let transparent_u = TransparentShaderUniforms {
-            mvp: gl.get_uniform_location(transparent, "mvp"),
-            ambient_color: gl.get_uniform_location(transparent, "ambient_color"),
-            diffuse_color: gl.get_uniform_location(transparent, "diffuse_color"),
-            specular_color: gl.get_uniform_location(transparent, "specular_color"),
-            diffuse_texture: gl.get_uniform_location(transparent, "diffuse_texture"),
-            dissolve: gl.get_uniform_location(transparent, "dissolve"),
-            opts: gl.get_uniform_location(transparent, "opts"),
-        };
-
-        (Shaders {
-            solid,
-            transparent,
-            composite,
-            screen,
-        },
-            solid_u,
-            transparent_u,
-        )
-    };
+    let (shaders, solid_u, transparent_u) = init_shaders(&gl).unwrap();
 
     let screen_quad_data: &[f32] = &[
         // x, y, z, u, v
@@ -340,30 +371,44 @@ unsafe fn main0(
     let main_uvs = gl.create_buffer()?;
     let main_normals = gl.create_buffer()?;
     let main_element_buf = gl.create_buffer()?;
-    // let quad_vao = gl.create_vertex_array()?;
-    // let quad_vbo = gl.create_buffer()?;
     {
         // TODO
         gl.bind_vertex_array(Some(main_vao));
-        
+
         gl.bind_buffer(glow::ELEMENT_ARRAY_BUFFER, Some(main_element_buf));
-        gl.buffer_data_u8_slice(glow::ELEMENT_ARRAY_BUFFER, memcast::as_bytes(&models.indices), glow::STATIC_DRAW);
-        
+        gl.buffer_data_u8_slice(
+            glow::ELEMENT_ARRAY_BUFFER,
+            memcast::as_bytes(&models.indices),
+            glow::STATIC_DRAW,
+        );
+
         gl.bind_buffer(glow::ARRAY_BUFFER, Some(main_vertices));
-        gl.buffer_data_u8_slice(glow::ARRAY_BUFFER, memcast::as_bytes(&models.vertices), glow::STATIC_DRAW);
+        gl.buffer_data_u8_slice(
+            glow::ARRAY_BUFFER,
+            memcast::as_bytes(&models.vertices),
+            glow::STATIC_DRAW,
+        );
         gl.enable_vertex_attrib_array(0);
         gl.vertex_attrib_pointer_f32(0, 3, glow::FLOAT, false, 0, 0);
 
         gl.bind_buffer(glow::ARRAY_BUFFER, Some(main_uvs));
-        gl.buffer_data_u8_slice(glow::ARRAY_BUFFER, memcast::as_bytes(&models.uvs), glow::STATIC_DRAW);
+        gl.buffer_data_u8_slice(
+            glow::ARRAY_BUFFER,
+            memcast::as_bytes(&models.uvs),
+            glow::STATIC_DRAW,
+        );
         gl.enable_vertex_attrib_array(1);
         gl.vertex_attrib_pointer_f32(1, 2, glow::FLOAT, false, 0, 0);
-        
+
         gl.bind_buffer(glow::ARRAY_BUFFER, Some(main_normals));
-        gl.buffer_data_u8_slice(glow::ARRAY_BUFFER, memcast::as_bytes(&models.normals), glow::STATIC_DRAW);
+        gl.buffer_data_u8_slice(
+            glow::ARRAY_BUFFER,
+            memcast::as_bytes(&models.normals),
+            glow::STATIC_DRAW,
+        );
         gl.enable_vertex_attrib_array(2);
         gl.vertex_attrib_pointer_f32(2, 3, glow::FLOAT, false, 0, 0);
-        
+
         gl.bind_buffer(glow::ELEMENT_ARRAY_BUFFER, None);
         gl.bind_buffer(glow::ARRAY_BUFFER, None);
         gl.bind_vertex_array(None);
@@ -408,16 +453,11 @@ unsafe fn main0(
     };
     reset_texture(&gl, depth_tx, &depth_params, width, height);
     let opaque_fbo_textures = &[
-            (glow::COLOR_ATTACHMENT0, opaque_tx),
-            (glow::DEPTH_ATTACHMENT, depth_tx),
-        ];
+        (glow::COLOR_ATTACHMENT0, opaque_tx),
+        (glow::DEPTH_ATTACHMENT, depth_tx),
+    ];
     let opaque_fbo_drawbufs = None;
-    rebind_framebuffer(
-        &gl,
-        opaque_fbo,
-        opaque_fbo_textures,
-        opaque_fbo_drawbufs,
-    )?;
+    rebind_framebuffer(&gl, opaque_fbo, opaque_fbo_textures, opaque_fbo_drawbufs)?;
     // attachments transparent
     let accum_tx = gl.create_texture()?;
     let accum_params = TextureParams {
@@ -437,12 +477,13 @@ unsafe fn main0(
         mag_filter: Some(glow::LINEAR),
     };
     reset_texture(&gl, reveal_tx, &reveral_params, width, height);
-    let transparent_fbo_textures = &[
-            (glow::COLOR_ATTACHMENT0, accum_tx),
-            (glow::COLOR_ATTACHMENT1, reveal_tx),
-            (glow::DEPTH_ATTACHMENT, depth_tx),
-        ];
-    let transparent_fbo_drawbufs = Some::<&[u32]>(&[glow::COLOR_ATTACHMENT0, glow::COLOR_ATTACHMENT1]);
+    let transparent_fbo_textures: &[(GLTextureAttachment, glow::Texture)] = &[
+        (glow::COLOR_ATTACHMENT0, accum_tx),
+        (glow::COLOR_ATTACHMENT1, reveal_tx),
+        (glow::DEPTH_ATTACHMENT, depth_tx),
+    ];
+    let transparent_fbo_drawbufs =
+        Some::<&[GLDrawBuffer]>(&[glow::COLOR_ATTACHMENT0, glow::COLOR_ATTACHMENT1]);
     rebind_framebuffer(
         &gl,
         transparent_fbo,
@@ -450,7 +491,10 @@ unsafe fn main0(
         transparent_fbo_drawbufs,
     )?;
     // transform matrices
-    let obj_mtxs = transforms.iter().map(|mmi| model_mat_from(*mmi)).collect::<Vec<_>>();
+    let obj_mtxs = objects
+        .iter()
+        .map(|(i, mmi)| (*i, model_mat_from(*mmi)))
+        .collect::<Vec<_>>();
 
     let mut state = GameState {
         gl: &gl,
@@ -462,6 +506,7 @@ unsafe fn main0(
         light_power: 50.0,
         light_intensity: glm::ivec3(1, 1, 1),
         captured: true,
+        fullscreen: false,
         running: true,
         fast: false,
         culling: true,
@@ -472,7 +517,7 @@ unsafe fn main0(
     let mut current_time;
     let mut delta_time;
     let mut draw_calls: u32;
-    let light_position = glm::vec3(4., 3., 3.);
+    let _light_position = glm::vec3(4., 3., 3.);
 
     'render: loop {
         let (w, h) = state.window.size();
@@ -491,7 +536,12 @@ unsafe fn main0(
                 reset_texture(&gl, *tx, params, width, height);
             }
             rebind_framebuffer(&gl, opaque_fbo, opaque_fbo_textures, opaque_fbo_drawbufs)?;
-            rebind_framebuffer(&gl, transparent_fbo, transparent_fbo_textures, transparent_fbo_drawbufs)?;
+            rebind_framebuffer(
+                &gl,
+                transparent_fbo,
+                transparent_fbo_textures,
+                transparent_fbo_drawbufs,
+            )?;
         }
         let (z_near, z_far) = (0.1, 100.0);
         let ComputedMatrices {
@@ -538,18 +588,17 @@ unsafe fn main0(
                 gl.uniform_matrix_4_f32_slice(
                     solid_u.mvp.as_ref(),
                     false,
-                    &memcast::mat4_as_array(vp_mat * obj_mtxs[i]),
+                    &memcast::mat4_as_array(vp_mat * obj_mtxs[i].1),
                 );
                 let mid = models.material_ids[i];
                 if (mid != prev_mid) || (i == 0) {
                     prev_mid = mid;
-                    if mid.is_some() && materials[mid.unwrap()].diffuse_texture.is_none() {
-                        let mat = &materials[mid.unwrap()];
-                        gl.uniform_3_f32_slice(solid_u.ambient_color.as_ref(), &mat.ambient.unwrap_or(DEFAULT_AMBIENT));
-                        gl.uniform_3_f32_slice(solid_u.diffuse_color.as_ref(), &mat.diffuse.unwrap_or(DEFAULT_DIFFUSE));
-                        gl.uniform_3_f32_slice(solid_u.specular_color.as_ref(), &mat.specular.unwrap_or(DEFAULT_SPECULAR));
-                    }
-                    else {
+                    if let Some(mat_id) = mid {
+                        let mat = &materials[mat_id];
+                        gl.uniform_3_f32_slice(solid_u.ambient_color.as_ref(), &mat.ambient);
+                        gl.uniform_3_f32_slice(solid_u.diffuse_color.as_ref(), &mat.diffuse);
+                        gl.uniform_3_f32_slice(solid_u.specular_color.as_ref(), &mat.specular);
+                    } else {
                         // set default materisl
                         gl.uniform_3_f32_slice(solid_u.ambient_color.as_ref(), &DEFAULT_AMBIENT);
                         gl.uniform_3_f32_slice(solid_u.diffuse_color.as_ref(), &DEFAULT_DIFFUSE);
@@ -561,7 +610,12 @@ unsafe fn main0(
                 gl.uniform_3_i32(solid_u.opts.as_ref(), 0, 1, 0);
                 gl.bind_vertex_array(Some(main_vao));
                 gl.bind_buffer(glow::ELEMENT_ARRAY_BUFFER, Some(main_element_buf));
-                gl.draw_elements(glow::TRIANGLES, models.counts[i] as i32, glow::UNSIGNED_INT, models.offsets[i] as i32);
+                gl.draw_elements(
+                    glow::TRIANGLES,
+                    models.counts[i] as i32,
+                    glow::UNSIGNED_INT,
+                    models.offsets[i] as i32,
+                );
                 draw_calls += 1;
             }
         }
@@ -580,30 +634,40 @@ unsafe fn main0(
 
             gl.use_program(Some(shaders.transparent));
 
-
             let mut prev_mid = None;
             for i in &models.transparent {
                 let i = *i;
                 gl.uniform_matrix_4_f32_slice(
                     transparent_u.mvp.as_ref(),
                     false,
-                    &memcast::mat4_as_array(vp_mat * obj_mtxs[i]),
+                    &memcast::mat4_as_array(vp_mat * obj_mtxs[i].1),
                 );
                 let mid = models.material_ids[i];
                 if (mid != prev_mid) || (i == 0) {
                     prev_mid = mid;
-                    if mid.is_some() && materials[mid.unwrap()].diffuse_texture.is_none() {
-                        let mat = &materials[mid.unwrap()];
-                        gl.uniform_3_f32_slice(transparent_u.ambient_color.as_ref(), &mat.ambient.unwrap_or(DEFAULT_AMBIENT));
-                        gl.uniform_3_f32_slice(transparent_u.diffuse_color.as_ref(), &mat.diffuse.unwrap_or(DEFAULT_DIFFUSE));
-                        gl.uniform_3_f32_slice(transparent_u.specular_color.as_ref(), &mat.specular.unwrap_or(DEFAULT_SPECULAR));
-                        gl.uniform_1_f32(transparent_u.dissolve.as_ref(), mat.dissolve.unwrap_or(DEFAULT_DISSOLVE));
-                    }
-                    else {
+                    if let Some(mat_id) = mid {
+                        let mat = &materials[mat_id];
+                        gl.uniform_3_f32_slice(transparent_u.ambient_color.as_ref(), &mat.ambient);
+                        gl.uniform_3_f32_slice(transparent_u.diffuse_color.as_ref(), &mat.diffuse);
+                        gl.uniform_3_f32_slice(
+                            transparent_u.specular_color.as_ref(),
+                            &mat.specular,
+                        );
+                        gl.uniform_1_f32(transparent_u.dissolve.as_ref(), mat.dissolve);
+                    } else {
                         // set default materisl
-                        gl.uniform_3_f32_slice(transparent_u.ambient_color.as_ref(), &DEFAULT_AMBIENT);
-                        gl.uniform_3_f32_slice(transparent_u.diffuse_color.as_ref(), &DEFAULT_DIFFUSE);
-                        gl.uniform_3_f32_slice(transparent_u.specular_color.as_ref(), &DEFAULT_SPECULAR);
+                        gl.uniform_3_f32_slice(
+                            transparent_u.ambient_color.as_ref(),
+                            &DEFAULT_AMBIENT,
+                        );
+                        gl.uniform_3_f32_slice(
+                            transparent_u.diffuse_color.as_ref(),
+                            &DEFAULT_DIFFUSE,
+                        );
+                        gl.uniform_3_f32_slice(
+                            transparent_u.specular_color.as_ref(),
+                            &DEFAULT_SPECULAR,
+                        );
                         gl.uniform_1_f32(transparent_u.dissolve.as_ref(), DEFAULT_DISSOLVE);
                     }
                 }
@@ -612,7 +676,12 @@ unsafe fn main0(
                 gl.uniform_3_i32(transparent_u.opts.as_ref(), 0, 1, 0);
                 gl.bind_vertex_array(Some(main_vao));
                 gl.bind_buffer(glow::ELEMENT_ARRAY_BUFFER, Some(main_element_buf));
-                gl.draw_elements(glow::TRIANGLES, models.counts[i] as i32, glow::UNSIGNED_INT, models.offsets[i] as i32);
+                gl.draw_elements(
+                    glow::TRIANGLES,
+                    models.counts[i] as i32,
+                    glow::UNSIGNED_INT,
+                    models.offsets[i] as i32,
+                );
                 draw_calls += 1;
             }
         }
@@ -679,94 +748,8 @@ unsafe fn main0(
     Ok(())
 }
 
-struct TextureParams {
-    internal_format: u32,
-    format: u32,
-    data_type: u32,
-    min_filter: Option<u32>,
-    mag_filter: Option<u32>,
-}
-
-unsafe fn reset_texture(
-    gl: &glow::Context,
-    tx: glow::Texture,
-    params: &TextureParams,
-    width: u32,
-    height: u32,
-) {
-    gl.bind_texture(glow::TEXTURE_2D, Some(tx));
-    gl.tex_image_2d(
-        glow::TEXTURE_2D,
-        0,
-        params.internal_format as i32,
-        width as i32,
-        height as i32,
-        0,
-        params.format,
-        params.data_type,
-        None,
-    );
-    if let Some(min_filter) = params.min_filter {
-        gl.tex_parameter_i32(
-            glow::TEXTURE_2D,
-            glow::TEXTURE_MIN_FILTER,
-            min_filter as i32,
-        );
-    }
-    if let Some(mag_filter) = params.mag_filter {
-        gl.tex_parameter_i32(
-            glow::TEXTURE_2D,
-            glow::TEXTURE_MAG_FILTER,
-            mag_filter as i32,
-        );
-    }
-    gl.bind_texture(glow::TEXTURE_2D, None);
-}
-
-unsafe fn rebind_framebuffer(
-    gl: &glow::Context,
-    fbo: glow::Framebuffer,
-    textures: &[(u32, glow::Texture)],
-    draw_buffers: Option<&[u32]>,
-) -> Result<(), String> {
-    gl.bind_framebuffer(glow::FRAMEBUFFER, Some(fbo));
-    for (attachment, tx) in textures.iter() {
-        gl.framebuffer_texture_2d(
-            glow::FRAMEBUFFER,
-            *attachment,
-            glow::TEXTURE_2D,
-            Some(*tx),
-            0,
-        );
-    }
-    if let Some(draw_buffers) = draw_buffers {
-        gl.draw_buffers(draw_buffers);
-    }
-    if gl.check_framebuffer_status(glow::FRAMEBUFFER) != glow::FRAMEBUFFER_COMPLETE {
-        return Err(format!("GL Error {}", gl.get_error()));
-    }
-    gl.bind_framebuffer(glow::FRAMEBUFFER, None);
-    Ok(())
-}
-
-#[derive(Clone, Copy, Debug)]
-struct ModelMatrixInput {
-    position: glm::Vec3,
-    rotation: glm::Vec3,
-    scale: glm::Vec3,
-}
-
-fn model_mat_from(i: ModelMatrixInput) -> glm::Mat4 {
-    let mut res = glmc::MAT4_ONE;
-    res = glm::ext::translate(&res, i.position);
-    res = glm::ext::rotate(&res, glm::radians(i.rotation.x), glm::vec3(1., 0., 0.));
-    res = glm::ext::rotate(&res, glm::radians(i.rotation.y), glm::vec3(0., 1., 0.));
-    res = glm::ext::rotate(&res, glm::radians(i.rotation.z), glm::vec3(0., 0., 1.));
-    res = glm::ext::scale(&res, i.scale);
-    res
-}
-
 struct GameState<'a> {
+    #[allow(unused)]
     gl: &'a glow::Context,
     window: sdl2::video::Window,
     mouse: sdl2::mouse::MouseUtil,
@@ -775,6 +758,7 @@ struct GameState<'a> {
     light_power: f32,
     light_intensity: glm::IVec3,
     captured: bool,
+    fullscreen: bool,
     wasd: glm::IVec3,
     fast: bool,
     running: bool,
@@ -898,6 +882,20 @@ fn handle_event(event: sdl2::event::Event, state: &mut GameState) {
             // yrel + == down
             state.rotation.x -= mouse_speed * xrel as f32;
             state.rotation.y -= mouse_speed * yrel as f32;
+        },
+        Event::KeyDown {
+            scancode: Some(Scancode::F11),
+            ..
+        } => {
+            state.fullscreen = !state.fullscreen;
+            use sdl2::video::FullscreenType;
+            if state.fullscreen {
+                if let Err(e) = state.window.set_fullscreen(FullscreenType::Desktop) {
+                    eprintln!("Cannot set fullscreen: {}", e);
+                }
+            } else if let Err(e) = state.window.set_fullscreen(FullscreenType::Off) {
+                eprintln!("Cannot exit fullscreen: {}", e);
+            }
         },
         Event::KeyDown {
             scancode: Some(Scancode::Q),
