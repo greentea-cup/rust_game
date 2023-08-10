@@ -1,4 +1,6 @@
 use crate::gl_utils::link_program;
+use crate::memcast;
+use crate::BakedMeshData;
 use glow::HasContext;
 
 pub struct InitializedWindow {
@@ -96,15 +98,18 @@ pub unsafe fn init_shaders(
     gl: &glow::Context,
 ) -> Result<(Shaders, SolidShaderUniforms, TransparentShaderUniforms), String> {
     macro_rules! prefix {
-        () => {"./data/shaders/"};
+        () => {
+            "./data/shaders/"
+        };
     }
 
     macro_rules! s {
         ($s:literal) => {
             &[
                 (glow::VERTEX_SHADER, concat!(prefix!(), $s, "_v.glsl")),
-                (glow::FRAGMENT_SHADER, concat!(prefix!(), $s, "_f.glsl"))
-            ].map(|(t, p)|(t, std::path::Path::new(p)))
+                (glow::FRAGMENT_SHADER, concat!(prefix!(), $s, "_f.glsl")),
+            ]
+            .map(|(t, p)| (t, std::path::Path::new(p)))
         };
     }
     let solid_shaders = s!("solid");
@@ -157,4 +162,79 @@ pub unsafe fn init_shaders(
         solid_u,
         transparent_u,
     ))
+}
+
+pub unsafe fn init_main_vao(
+    gl: &glow::Context,
+    vao: glow::VertexArray,
+    vertices_buf: glow::Buffer,
+    uvs_buf: glow::Buffer,
+    normals_buf: glow::Buffer,
+    elements_buf: glow::Buffer,
+    data: &BakedMeshData,
+) {
+    gl.bind_vertex_array(Some(vao));
+
+    gl.bind_buffer(glow::ELEMENT_ARRAY_BUFFER, Some(elements_buf));
+    gl.buffer_data_u8_slice(
+        glow::ELEMENT_ARRAY_BUFFER,
+        memcast::as_bytes(&data.indices),
+        glow::STATIC_DRAW,
+    );
+
+    gl.bind_buffer(glow::ARRAY_BUFFER, Some(vertices_buf));
+    gl.buffer_data_u8_slice(
+        glow::ARRAY_BUFFER,
+        memcast::as_bytes(&data.vertices),
+        glow::STATIC_DRAW,
+    );
+    gl.enable_vertex_attrib_array(0);
+    gl.vertex_attrib_pointer_f32(0, 3, glow::FLOAT, false, 0, 0);
+
+    gl.bind_buffer(glow::ARRAY_BUFFER, Some(uvs_buf));
+    gl.buffer_data_u8_slice(
+        glow::ARRAY_BUFFER,
+        memcast::as_bytes(&data.uvs),
+        glow::STATIC_DRAW,
+    );
+    gl.enable_vertex_attrib_array(1);
+    gl.vertex_attrib_pointer_f32(1, 2, glow::FLOAT, false, 0, 0);
+
+    gl.bind_buffer(glow::ARRAY_BUFFER, Some(normals_buf));
+    gl.buffer_data_u8_slice(
+        glow::ARRAY_BUFFER,
+        memcast::as_bytes(&data.normals),
+        glow::STATIC_DRAW,
+    );
+    gl.enable_vertex_attrib_array(2);
+    gl.vertex_attrib_pointer_f32(2, 3, glow::FLOAT, false, 0, 0);
+
+    gl.bind_buffer(glow::ELEMENT_ARRAY_BUFFER, None);
+    gl.bind_buffer(glow::ARRAY_BUFFER, None);
+    gl.bind_vertex_array(None);
+}
+
+pub unsafe fn init_screen_vao(gl: &glow::Context, vao: glow::VertexArray, buf: glow::Buffer) {
+    const F32S: i32 = std::mem::size_of::<f32>() as i32;
+    const SCREEN_QUAD_DATA: &[f32] = &[
+        // x, y, z, u, v
+        -1.0, -1.0, 0.0, 0.0, 0.0, //
+        1.0, -1.0, 0.0, 1.0, 0.0, //
+        1.0, 1.0, 0.0, 1.0, 1.0, //
+        1.0, 1.0, 0.0, 1.0, 1.0, //
+        -1.0, 1.0, 0.0, 0.0, 1.0, //
+        -1.0, -1.0, 0.0, 0.0, 0.0, //
+    ];
+    gl.bind_vertex_array(Some(vao));
+    gl.bind_buffer(glow::ARRAY_BUFFER, Some(buf));
+    gl.buffer_data_u8_slice(
+        glow::ARRAY_BUFFER,
+        memcast::as_bytes(SCREEN_QUAD_DATA),
+        glow::STATIC_DRAW,
+    );
+    gl.enable_vertex_attrib_array(0);
+    gl.vertex_attrib_pointer_f32(0, 3, glow::FLOAT, false, 5 * F32S, 0);
+    gl.enable_vertex_attrib_array(1);
+    gl.vertex_attrib_pointer_f32(1, 2, glow::FLOAT, false, 5 * F32S, 3 * F32S);
+    gl.bind_vertex_array(None);
 }
