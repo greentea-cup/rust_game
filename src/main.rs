@@ -1,3 +1,4 @@
+mod atlas;
 mod gl_utils;
 mod glmc;
 mod loader;
@@ -12,8 +13,8 @@ fn main() {
     use glm::vec3;
     use std::path::Path;
     let objs_to_load = [
-        Path::new("./data/objects/box.obj"),
         Path::new("./data/objects/dice.obj"),
+        Path::new("./data/objects/box.obj"),
         Path::new("./data/objects/red_crystal.obj"),
         Path::new("./data/objects/green_crystal.obj"),
         Path::new("./data/objects/blue_crystal.obj"),
@@ -23,36 +24,73 @@ fn main() {
         materials,
     } = prepare_objs(&objs_to_load).unwrap();
     let materials = prepare_materials(&materials);
-    let baked = bake_meshes(&mut models, &materials);
-    // TODO: split objs and object instances
-    // (relation one .obj to many in-game objects
+    let tx_mats = materials
+        .iter()
+        .enumerate()
+        .filter(|x| !x.1.is_transparent && x.1.diffuse_texture.is_some())
+        .collect::<Vec<_>>();
+
+    let (atlas, _skipped) = atlas::textures_to_atlas(
+        &tx_mats
+            .iter()
+            .map(|x| x.1.diffuse_texture.clone().unwrap())
+            .collect::<Vec<_>>(),
+        128,
+        false,
+        3,
+    );
+    image::RgbImage::from_raw(128, 128, atlas.texture.clone())
+        .unwrap()
+        .save("./cache/atlas0.png")
+        .unwrap();
+    let tx_mats_map = tx_mats
+        .iter()
+        .map(|x| x.0)
+        .enumerate()
+        .map(|(a, b)| (b, a))
+        .collect::<_>();
+    let ttx_mats = materials
+        .iter()
+        .enumerate()
+        .filter(|x| x.1.is_transparent && x.1.diffuse_texture.is_some())
+        .collect::<Vec<_>>();
+    let (transparent_atlas, _skipped1) = atlas::textures_to_atlas(
+        &ttx_mats
+            .iter()
+            .map(|x| x.1.diffuse_texture.clone().unwrap())
+            .collect::<Vec<_>>(),
+        128,
+        true,
+        3,
+    );
+    image::RgbaImage::from_raw(128, 128, transparent_atlas.texture.clone())
+    .unwrap()
+    .save("./cache/atlas1.png")
+    .unwrap();
+    let ttx_mats_map = ttx_mats
+        .iter()
+        .map(|x| x.0)
+        .enumerate()
+        .map(|(a, b)| (b, a))
+        .collect::<_>();
+    let baked = bake_meshes(
+        &mut models,
+        &materials,
+        &atlas,
+        &transparent_atlas,
+        &tx_mats_map,
+        &ttx_mats_map,
+    );
+    let z = vec3(0., 0., 0.);
+    let o = vec3(1., 1., 1.);
     let objects = [
-        (
-            0,
-            Transform::new(vec3(-6., 0., 0.), vec3(0., 0., 0.), vec3(1., 1., 1.)),
-        ),
-        (
-            1,
-            Transform::new(vec3(-9., 0., 0.), vec3(0., 0., 0.), vec3(1., 1., 1.)),
-        ),
-        (
-            2,
-            Transform::new(vec3(0.25, 0., 1.), vec3(0., 0., 0.), vec3(1., 1., 1.)),
-        ),
-        (
-            3,
-            Transform::new(vec3(0., -0.25, 0.25), vec3(0., 0., 0.), vec3(1., 1., 1.)),
-        ),
-        (
-            4,
-            Transform::new(vec3(0.5, 0.25, 0.5), vec3(0., 0., 0.), vec3(1., 1., 1.)),
-        ),
-        (
-            4,
-            Transform::new(vec3(0.5, 0., 1.), vec3(1., 0., 0.), vec3(0.5, 0.5, 0.5)),
-        ),
+        (0, Transform::new(vec3(0., 0., 0.), z, o)),
+        (1, Transform::new(vec3(3., 0., 0.), z, o)),
+        (2, Transform::new(vec3(6., 0., 0.), z, o)),
+        (3, Transform::new(vec3(6., 0., 3.), z, o)),
+        (4, Transform::new(vec3(6., 0., 6.), z, o)),
     ];
-    unsafe { main0(baked, &materials, &objects).unwrap() }
+    unsafe { main0(baked, &materials, &objects, &atlas, &transparent_atlas).unwrap() }
 }
 
 #[derive(Debug)]
@@ -64,12 +102,12 @@ pub struct Material {
     pub shininess: f32,
     pub dissolve: f32,
     pub optical_density: f32,
-    pub ambient_texture: Option<Vec<u8>>,
-    pub diffuse_texture: Option<Vec<u8>>,
-    pub specular_texture: Option<Vec<u8>>,
-    pub normal_texture: Option<Vec<u8>>,
-    pub shininess_texture: Option<Vec<u8>>,
-    pub dissolve_texture: Option<Vec<u8>>,
+    pub ambient_texture: Option<image::DynamicImage>,
+    pub diffuse_texture: Option<image::DynamicImage>,
+    pub specular_texture: Option<image::DynamicImage>,
+    pub normal_texture: Option<image::DynamicImage>,
+    pub shininess_texture: Option<image::DynamicImage>,
+    pub dissolve_texture: Option<image::DynamicImage>,
     pub illumination_model: u8,
     pub is_transparent: bool,
 }
@@ -86,32 +124,33 @@ fn has_alpha_channel(img: &image::DynamicImage) -> bool {
     )
 }
 
-fn load_texture_data(path: Option<&std::path::Path>) -> Option<Vec<u8>> {
+fn load_texture_data(path: Option<&String>) -> Option<image::DynamicImage> {
     use std::fs::File;
     use std::io::BufReader;
     let file = File::open(path?).ok()?;
     let reader = BufReader::new(file);
-    let img = image::load(reader, image::ImageFormat::Png).ok()?;
-    println!("{:?}", has_alpha_channel(&img));
-    Some(img.to_rgba8().into_flat_samples().samples)
+    image::load(reader, image::ImageFormat::Png).ok()
 }
 
 fn prepare_materials(materials: &[tobj::Material]) -> Vec<Material> {
-    use std::path::Path;
     let mut res = Vec::with_capacity(materials.len());
     for mat in materials.iter() {
-        let ambient_texture = load_texture_data(mat.ambient_texture.as_ref().map(Path::new));
-        let diffuse_texture = load_texture_data(mat.diffuse_texture.as_ref().map(Path::new));
-        let specular_texture = load_texture_data(mat.specular_texture.as_ref().map(Path::new));
-        let normal_texture = load_texture_data(mat.normal_texture.as_ref().map(Path::new));
-        let dissolve_texture = load_texture_data(mat.dissolve_texture.as_ref().map(Path::new));
-        let shininess_texture = load_texture_data(mat.shininess_texture.as_ref().map(Path::new));
+        let ambient_texture = load_texture_data(mat.ambient_texture.as_ref());
+        let diffuse_texture = load_texture_data(mat.diffuse_texture.as_ref());
+        let specular_texture = load_texture_data(mat.specular_texture.as_ref());
+        let normal_texture = load_texture_data(mat.normal_texture.as_ref());
+        let dissolve_texture = load_texture_data(mat.dissolve_texture.as_ref());
+        let shininess_texture = load_texture_data(mat.shininess_texture.as_ref());
         let ambient = mat.ambient.unwrap_or([1., 1., 1.]);
         let diffuse = mat.diffuse.unwrap_or([1., 1., 1.]);
         let specular = mat.specular.unwrap_or([1., 1., 1.]);
         let shininess = mat.shininess.unwrap_or(200.);
         let dissolve = mat.dissolve.unwrap_or(1.);
-        let is_transparent = dissolve < 1.;
+        let is_transparent = dissolve < 1.
+            || diffuse_texture
+                .as_ref()
+                .map(has_alpha_channel)
+                .unwrap_or(false);
         let illumination_model = mat.illumination_model.unwrap_or(0);
         let optical_density = mat.optical_density.unwrap_or(1.);
         res.push(Material {
@@ -148,7 +187,14 @@ pub struct BakedMeshData {
     transparent: Vec<usize>,
 }
 
-fn bake_meshes(models: &mut [ModelData], materials: &[Material]) -> BakedMeshData {
+fn bake_meshes(
+    models: &mut [ModelData],
+    materials: &[Material],
+    atlas: &atlas::Atlas,
+    tatlas: &atlas::Atlas,
+    tx_materials: &std::collections::HashMap<usize, usize>,
+    ttx_materials: &std::collections::HashMap<usize, usize>,
+) -> BakedMeshData {
     use std::collections::hash_map::Entry;
     use std::collections::HashMap;
 
@@ -177,8 +223,8 @@ fn bake_meshes(models: &mut [ModelData], materials: &[Material]) -> BakedMeshDat
             (false, false, 0)
         }
     });
-
     for (model_index, model) in models.iter().enumerate() {
+        cache.clear();
         println!("{}", model.name);
         {
             let is_transparent =
@@ -197,14 +243,29 @@ fn bake_meshes(models: &mut [ModelData], materials: &[Material]) -> BakedMeshDat
         const F32S: usize = std::mem::size_of::<f32>();
         let m = &model.mesh;
         let len = m.indices.len();
+
+        let model_uvs0 = model
+            .material_id
+            .map(|mid| {
+                if materials[mid].is_transparent {
+                    (mid, &ttx_materials, &tatlas)
+                } else {
+                    (mid, &tx_materials, &atlas)
+                }
+            })
+            .and_then(|(mid, &a, &b)| {
+                a.get(&mid)
+                    .map(|&midx| atlas::adjust_uvs(&m.uvs, b.map[midx]))
+            });
+        let model_uvs = model_uvs0.as_ref().unwrap_or(&m.uvs);
         // here xs and b_xs are pointing to the same location
         // both f32 and bytes because f32 can't stand as hash key
         // and bytes are not the data needed for result
         let vs = memcast::slice_cast::<f32, [f32; 3]>(&m.vertices, len);
-        let us = memcast::slice_cast::<f32, [f32; 2]>(&m.uvs, len);
+        let us = memcast::slice_cast::<f32, [f32; 2]>(model_uvs, len);
         let ns = memcast::slice_cast::<f32, [f32; 3]>(&m.normals, len);
         let b_vs = memcast::slice_cast::<f32, [u8; 3 * F32S]>(&m.vertices, len);
-        let b_us = memcast::slice_cast::<f32, [u8; 2 * F32S]>(&m.uvs, len);
+        let b_us = memcast::slice_cast::<f32, [u8; 2 * F32S]>(model_uvs, len);
         let b_ns = memcast::slice_cast::<f32, [u8; 3 * F32S]>(&m.normals, len);
 
         for i in &m.indices {
@@ -316,6 +377,8 @@ unsafe fn main0(
     models: BakedMeshData,
     materials: &[Material],
     objects: &[(usize, Transform)],
+    atlas: &atlas::Atlas,
+    transparent_atlas: &atlas::Atlas,
 ) -> Result<(), String> {
     let start = std::time::SystemTime::now();
     let (mut width, mut height): (u32, u32) = (800, 600);
@@ -422,7 +485,56 @@ unsafe fn main0(
             },
         }
     }
-
+    let main_atlas_tx = gl.create_texture()?;
+    gl.bind_texture(glow::TEXTURE_2D, Some(main_atlas_tx));
+    // TODO hardcode
+    gl.tex_image_2d(
+        glow::TEXTURE_2D,
+        0,
+        glow::RGB as i32,
+        128,
+        128,
+        0,
+        glow::RGB,
+        glow::UNSIGNED_BYTE,
+        Some(atlas.texture.as_slice()),
+    );
+    gl.tex_parameter_i32(
+        glow::TEXTURE_2D,
+        glow::TEXTURE_MIN_FILTER,
+        glow::NEAREST as i32,
+    );
+    gl.tex_parameter_i32(
+        glow::TEXTURE_2D,
+        glow::TEXTURE_MAG_FILTER,
+        glow::NEAREST as i32,
+    );
+    // gl.bind_texture(glow::TEXTURE_2D, None);
+    let main_tatlas_tx = gl.create_texture()?;
+    gl.bind_texture(glow::TEXTURE_2D, Some(main_tatlas_tx));
+    gl.tex_image_2d(
+        glow::TEXTURE_2D,
+        0,
+        glow::RGBA as i32,
+        128,
+        128,
+        0,
+        glow::RGBA,
+        glow::UNSIGNED_BYTE,
+        Some(transparent_atlas.texture.as_slice()),
+    );
+    gl.tex_parameter_i32(
+        glow::TEXTURE_2D,
+        glow::TEXTURE_MIN_FILTER,
+        glow::NEAREST as i32,
+    );
+    gl.tex_parameter_i32(
+        glow::TEXTURE_2D,
+        glow::TEXTURE_MAG_FILTER,
+        glow::NEAREST as i32,
+    );
+    gl.bind_texture(glow::TEXTURE_2D, None);
+    //
     let clear_colors = [[0.1, 0.2, 0.3], [0., 0., 0.]];
 
     let mut state = GameState {
@@ -469,14 +581,14 @@ unsafe fn main0(
     };
 
     'render: loop {
-        #[allow(unused_assignments)]
+        #[allow(unused_assignments, unused)]
         {
             current_time = start.elapsed().unwrap().as_secs_f32();
             delta_time = current_time - prev_time;
             prev_time = current_time;
             let fps = (1. / delta_time) as u32;
-            let ms = (delta_time * 1000.).round() as u32;
-            println!("{:?} FPS | {:?}ms", fps, ms);
+            let ms = (delta_time * 1000.).floor() as u32;
+            // println!("{:?} FPS | {:?}ms", fps, ms);
         }
 
         let (z_near, z_far) = (0.1, 100.0);
@@ -527,6 +639,7 @@ unsafe fn main0(
                     gl.uniform_3_f32_slice(solid_u.specular_color.as_ref(), &mat.specular);
                 }
                 gl.active_texture(glow::TEXTURE1);
+                gl.bind_texture(glow::TEXTURE_2D, Some(main_atlas_tx));
                 gl.uniform_1_i32(solid_u.diffuse_texture.as_ref(), 1);
                 gl.uniform_3_i32(solid_u.opts.as_ref(), 0, 1, 0);
                 for &mtx in mtxs {
@@ -541,7 +654,7 @@ unsafe fn main0(
                         glow::TRIANGLES,
                         models.counts[i] as i32,
                         glow::UNSIGNED_INT,
-                        models.offsets[i] as i32,
+                        models.offsets[i] as i32 * std::mem::size_of::<u32>() as i32,
                     );
                     draw_calls += 1;
                 }
@@ -574,10 +687,19 @@ unsafe fn main0(
                     gl.uniform_3_f32_slice(transparent_u.diffuse_color.as_ref(), &mat.diffuse);
                     gl.uniform_3_f32_slice(transparent_u.specular_color.as_ref(), &mat.specular);
                     gl.uniform_1_f32(transparent_u.dissolve.as_ref(), mat.dissolve);
+                    let o_ambient = mat.ambient_texture.is_some() as i32;
+                    let o_diffuse = mat.diffuse_texture.is_some() as i32;
+                    let o_specular = mat.specular_texture.is_some() as i32;
+                    gl.uniform_3_i32(
+                        transparent_u.opts.as_ref(),
+                        o_ambient,
+                        o_diffuse,
+                        o_specular,
+                    );
                 }
                 gl.active_texture(glow::TEXTURE1);
+                gl.bind_texture(glow::TEXTURE_2D, Some(main_tatlas_tx));
                 gl.uniform_1_i32(transparent_u.diffuse_texture.as_ref(), 1);
-                gl.uniform_3_i32(transparent_u.opts.as_ref(), 0, 1, 0);
 
                 for &mtx in mtxs {
                     gl.uniform_matrix_4_f32_slice(
@@ -592,7 +714,7 @@ unsafe fn main0(
                         glow::TRIANGLES,
                         models.counts[i] as i32,
                         glow::UNSIGNED_INT,
-                        models.offsets[i] as i32,
+                        models.offsets[i] as i32 * std::mem::size_of::<u32>() as i32,
                     );
                     draw_calls += 1;
                 }

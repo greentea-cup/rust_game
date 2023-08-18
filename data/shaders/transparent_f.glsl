@@ -22,7 +22,11 @@ void main() {
         (((opts.y & 1) == 1) ? diffuse_color : vec3(1))
         * (((opts.y & 2) == 2) ? texture(diffuse_texture, uv).rgb : vec3(1))
     );*/
-    vec3 diffuse = diffuse_color;
+    vec3 diffuse_tx = opts.y == 1 ? 
+        texture(diffuse_texture, uv).rgb : vec3(1);
+    // vec3 diffuse_tx = texture(diffuse_texture, uv).rgb;
+    // vec3 diffuse = diffuse_tx;
+    vec3 diffuse = diffuse_color * diffuse_tx;
     // vec3 diffuse = vec3(dissolve);
     // vec3 diffuse = vec3(1);
 	// weight function

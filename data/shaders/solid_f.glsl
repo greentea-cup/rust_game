@@ -20,7 +20,12 @@ void main() {
         (((opts.y & 1) == 1) ? diffuse_color: vec3(1))
         * (((opts.y & 2) == 2) ? texture(diffuse_texture, uv).rgb : vec3(1))
     );*/
-    vec3 diffuse = diffuse_color;
+    // TODO: change 'true' to opts check for diffuse sampler
+    // and change opts to uint or smth
+    vec3 diffuse_tx = true ? texture(diffuse_texture, uv).rgb : vec3(1);
+    vec3 diffuse = diffuse_color * diffuse_tx;
     // vec3 diffuse = vec3(1);
-	color = vec4(diffuse, 1.0f);
+    // vec3 diffuse = vec3(uv, 0);
+    // vec3 diffuse = diffuse_tx;
+    color = vec4(diffuse, 1.0f);
 }
