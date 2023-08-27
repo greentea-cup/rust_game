@@ -23,7 +23,7 @@ fn main() {
         mut models,
         materials,
     } = prepare_objs(&objs_to_load).unwrap();
-    let materials = prepare_materials(&materials);
+    let materials = prepare_materials(materials);
     let tx_mats = materials
         .iter()
         .enumerate()
@@ -39,6 +39,9 @@ fn main() {
         false,
         3,
     );
+    std::fs::create_dir_all("./cache").unwrap();
+    // let the_atlas = atlas::materials_to_atlas(&tx_mats, &atlas::AtlasOptions {min_size: 128, ..Default::default()});
+
     image::RgbImage::from_raw(128, 128, atlas.texture.clone())
         .unwrap()
         .save("./cache/atlas0.png")
@@ -63,6 +66,7 @@ fn main() {
         true,
         3,
     );
+    // let the_tatlas = atlas::materials_to_atlas(&ttx_mats, &atlas::AtlasOptions {min_size: 128, transparent: true, ..Default::default()});
     image::RgbaImage::from_raw(128, 128, transparent_atlas.texture.clone())
     .unwrap()
     .save("./cache/atlas1.png")
@@ -132,9 +136,9 @@ fn load_texture_data(path: Option<&String>) -> Option<image::DynamicImage> {
     image::load(reader, image::ImageFormat::Png).ok()
 }
 
-fn prepare_materials(materials: &[tobj::Material]) -> Vec<Material> {
+fn prepare_materials(materials: Vec<tobj::Material>) -> Vec<Material> {
     let mut res = Vec::with_capacity(materials.len());
-    for mat in materials.iter() {
+    for mat in materials {
         let ambient_texture = load_texture_data(mat.ambient_texture.as_ref());
         let diffuse_texture = load_texture_data(mat.diffuse_texture.as_ref());
         let specular_texture = load_texture_data(mat.specular_texture.as_ref());
@@ -154,7 +158,7 @@ fn prepare_materials(materials: &[tobj::Material]) -> Vec<Material> {
         let illumination_model = mat.illumination_model.unwrap_or(0);
         let optical_density = mat.optical_density.unwrap_or(1.);
         res.push(Material {
-            name: mat.name.as_str().to_owned(),
+            name: mat.name,
             ambient,
             diffuse,
             specular,
@@ -392,6 +396,32 @@ unsafe fn main0(
 
     let mouse = sdl.mouse();
     mouse.set_relative_mouse_mode(true);
+
+    // NOTE: ttf test
+    {
+        println!("SDL2 TTF: {}", sdl2::ttf::get_linked_version());
+        let ttf = sdl2::ttf::init().map_err(|e| e.to_string())?;
+        let font = ttf.load_font("./data/fonts/DejaVuSansMono.ttf", 50)?;
+        let max_width = 0;
+        let text = "Как же это\nбыло сложно";
+        let fg = sdl2::pixels::Color::RGBA(255, 255, 255, 255);
+        let bg = sdl2::pixels::Color::RGBA(127, 127, 127, 127);
+        // initial surface format is ARGB as per TTF_RenderUTF8_*
+        let pixel_format = sdl2::pixels::PixelFormatEnum::RGBA32.try_into()?;
+
+        macro_rules! render_txt {
+            ($type:ident, $($args:expr),+) => {{
+                let txt = font.render(text).$type($($args),+).unwrap().convert(&pixel_format)?;
+                let data = txt.with_lock(|x| x.to_vec());
+                image::RgbaImage::from_raw(txt.width(), txt.height(), data).unwrap().save(concat!("./cache/", stringify!($type), ".png")).unwrap();
+            }};
+        }
+
+        render_txt!(blended, fg);
+        render_txt!(blended_wrapped, fg, max_width);
+        render_txt!(solid, fg);
+        render_txt!(shaded, fg, bg);
+    }
 
     gl.enable(glow::DEBUG_OUTPUT);
     gl.debug_message_callback(debug_message_callback);
