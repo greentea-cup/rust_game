@@ -71,6 +71,8 @@ pub fn init_window(width: u32, height: u32) -> Result<InitializedWindow, String>
 
 pub struct SolidShaderUniforms {
     pub mvp: Option<glow::UniformLocation>,
+    pub near: Option<glow::UniformLocation>,
+    pub far: Option<glow::UniformLocation>,
     pub ambient_color: Option<glow::UniformLocation>,
     pub diffuse_color: Option<glow::UniformLocation>,
     pub specular_color: Option<glow::UniformLocation>,
@@ -80,6 +82,8 @@ pub struct SolidShaderUniforms {
 
 pub struct TransparentShaderUniforms {
     pub mvp: Option<glow::UniformLocation>,
+    pub near: Option<glow::UniformLocation>,
+    pub far: Option<glow::UniformLocation>,
     pub ambient_color: Option<glow::UniformLocation>,
     pub diffuse_color: Option<glow::UniformLocation>,
     pub specular_color: Option<glow::UniformLocation>,
@@ -134,6 +138,8 @@ pub unsafe fn init_shaders(
         SolidShaderUniforms,
         solid,
         mvp,
+        near,
+        far,
         ambient_color,
         diffuse_color,
         specular_color,
@@ -144,6 +150,8 @@ pub unsafe fn init_shaders(
         TransparentShaderUniforms,
         transparent,
         mvp,
+        near,
+        far,
         ambient_color,
         diffuse_color,
         specular_color,

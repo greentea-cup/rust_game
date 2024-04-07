@@ -68,9 +68,9 @@ fn main() {
     );
     // let the_tatlas = atlas::materials_to_atlas(&ttx_mats, &atlas::AtlasOptions {min_size: 128, transparent: true, ..Default::default()});
     image::RgbaImage::from_raw(128, 128, transparent_atlas.texture.clone())
-    .unwrap()
-    .save("./cache/atlas1.png")
-    .unwrap();
+        .unwrap()
+        .save("./cache/atlas1.png")
+        .unwrap();
     let ttx_mats_map = ttx_mats
         .iter()
         .map(|x| x.0)
@@ -97,6 +97,469 @@ fn main() {
     unsafe { main0(baked, &materials, &objects, &atlas, &transparent_atlas).unwrap() }
 }
 
+unsafe fn main0(
+    models: BakedMeshData,
+    materials: &[Material],
+    objects: &[(usize, Transform)],
+    atlas: &atlas::Atlas,
+    transparent_atlas: &atlas::Atlas,
+) -> Result<(), String> {
+    let start = std::time::SystemTime::now();
+    let (mut width, mut height): (u32, u32) = (800, 600);
+    let InitializedWindow {
+        mut gl,
+        sdl,
+        window,
+        mut event_loop,
+        gl_context: _gl_context, /* NOTE: should not drop */
+    } = init_window(width, height)?;
+
+    let mouse = sdl.mouse();
+    mouse.set_relative_mouse_mode(true);
+
+    // NOTE: ttf test
+    {
+        println!("SDL2 TTF: {}", sdl2::ttf::get_linked_version());
+        let ttf = sdl2::ttf::init().map_err(|e| e.to_string())?;
+        let font = ttf.load_font("./data/fonts/DejaVuSansMono.ttf", 50)?;
+        let max_width = 0;
+        let text = "Как же это\nбыло сложно\n\u{65e5}\u{672c}\u{8a9e}\u{3067}\u{4f55}\u{304b}";
+        let fg = sdl2::pixels::Color::RGBA(255, 0, 0, 255);
+        let bg = sdl2::pixels::Color::RGBA(127, 127, 127, 127);
+        // initial surface format is ARGB as per TTF_RenderUTF8_*
+        let pixel_format = sdl2::pixels::PixelFormatEnum::RGBA32;
+
+        macro_rules! render_txt {
+            ($type:ident, $($args:expr),+) => {{
+                let txt = font.render(text).$type($($args),+).unwrap().convert_format(pixel_format)?;
+                let data = txt.with_lock(|x| x.to_vec());
+                image::RgbaImage::from_raw(
+                    txt.width(), txt.height(), data
+                ).unwrap().save(concat!("./cache/", stringify!($type), ".png")).unwrap();
+            }};
+        }
+
+        render_txt!(blended, fg);
+        render_txt!(blended_wrapped, fg, max_width);
+        render_txt!(shaded, fg, bg);
+    }
+
+    gl.enable(glow::DEBUG_OUTPUT);
+    gl.debug_message_callback(debug_message_callback);
+
+    let mut aspect_ratio = width as f32 / height as f32;
+    let fov = glm::radians(45.);
+
+    let (shaders, solid_u, transparent_u) = init_shaders(&gl).unwrap();
+    let main_vao = gl.create_vertex_array()?;
+    let main_vertices = gl.create_buffer()?;
+    let main_uvs = gl.create_buffer()?;
+    let main_normals = gl.create_buffer()?;
+    let main_elements = gl.create_buffer()?;
+    init_main_vao(
+        &gl,
+        main_vao,
+        main_vertices,
+        main_uvs,
+        main_normals,
+        main_elements,
+        &models,
+    );
+
+    let screen_vao = gl.create_vertex_array()?;
+    let screen_vbo = gl.create_buffer()?;
+    init_screen_vao(&gl, screen_vao, screen_vbo);
+    // set up framebuffers and their texture attachments
+    let opaque_fbo = gl.create_framebuffer()?;
+    let transparent_fbo = gl.create_framebuffer()?;
+    // attachments opaque
+    let opaque_tx = gl.create_texture()?;
+    let opaque_params = TextureParams {
+        internal_format: glow::RGBA16F,
+        format: glow::RGBA,
+        data_type: glow::HALF_FLOAT,
+        min_filter: Some(glow::LINEAR),
+        mag_filter: Some(glow::LINEAR),
+    };
+    reset_texture(&gl, opaque_tx, &opaque_params, width, height);
+    let depth_tx = gl.create_texture()?;
+    let depth_params = TextureParams {
+        internal_format: glow::DEPTH_COMPONENT,
+        format: glow::DEPTH_COMPONENT,
+        data_type: glow::FLOAT,
+        min_filter: None,
+        mag_filter: None,
+    };
+    reset_texture(&gl, depth_tx, &depth_params, width, height);
+    let opaque_fbo_tx = &[
+        (glow::COLOR_ATTACHMENT0, opaque_tx),
+        (glow::DEPTH_ATTACHMENT, depth_tx),
+    ];
+    let opaque_fbo_db = None;
+    rebind_framebuffer(&gl, opaque_fbo, opaque_fbo_tx, opaque_fbo_db)?;
+    // attachments transparent
+    let accum_tx = gl.create_texture()?;
+    let accum_params = TextureParams {
+        internal_format: glow::RGBA16F,
+        format: glow::RGBA,
+        data_type: glow::HALF_FLOAT,
+        min_filter: Some(glow::LINEAR),
+        mag_filter: Some(glow::LINEAR),
+    };
+    reset_texture(&gl, accum_tx, &accum_params, width, height);
+    let reveal_tx = gl.create_texture()?;
+    let reveral_params = TextureParams {
+        internal_format: glow::R8,
+        format: glow::RED,
+        data_type: glow::FLOAT,
+        min_filter: Some(glow::LINEAR),
+        mag_filter: Some(glow::LINEAR),
+    };
+    reset_texture(&gl, reveal_tx, &reveral_params, width, height);
+    let transparent_fbo_tx: &[(GLTextureAttachment, glow::Texture)] = &[
+        (glow::COLOR_ATTACHMENT0, accum_tx),
+        (glow::COLOR_ATTACHMENT1, reveal_tx),
+        (glow::DEPTH_ATTACHMENT, depth_tx),
+    ];
+    let transparent_fbo_db =
+        Some::<&[GLDrawBuffer]>(&[glow::COLOR_ATTACHMENT0, glow::COLOR_ATTACHMENT1]);
+    rebind_framebuffer(&gl, transparent_fbo, transparent_fbo_tx, transparent_fbo_db)?;
+    // transform matrices
+    use std::collections::hash_map::Entry;
+    use std::collections::HashMap;
+    let mut model_transforms: HashMap<usize, Vec<_>> = HashMap::new();
+    for (i, transform) in objects {
+        match model_transforms.entry(*i) {
+            Entry::Occupied(mut e) => e.get_mut().push(model_mat_from(*transform)),
+            Entry::Vacant(e) => {
+                e.insert(vec![model_mat_from(*transform)]);
+            },
+        }
+    }
+    let main_atlas_tx = gl.create_texture()?;
+    gl.bind_texture(glow::TEXTURE_2D, Some(main_atlas_tx));
+    // TODO hardcode
+    gl.tex_image_2d(
+        glow::TEXTURE_2D,
+        0,
+        glow::RGB as i32,
+        128,
+        128,
+        0,
+        glow::RGB,
+        glow::UNSIGNED_BYTE,
+        Some(atlas.texture.as_slice()),
+    );
+    gl.tex_parameter_i32(
+        glow::TEXTURE_2D,
+        glow::TEXTURE_MIN_FILTER,
+        glow::NEAREST as i32,
+    );
+    gl.tex_parameter_i32(
+        glow::TEXTURE_2D,
+        glow::TEXTURE_MAG_FILTER,
+        glow::NEAREST as i32,
+    );
+    // gl.bind_texture(glow::TEXTURE_2D, None);
+    let main_tatlas_tx = gl.create_texture()?;
+    gl.bind_texture(glow::TEXTURE_2D, Some(main_tatlas_tx));
+    gl.tex_image_2d(
+        glow::TEXTURE_2D,
+        0,
+        glow::RGBA as i32,
+        128,
+        128,
+        0,
+        glow::RGBA,
+        glow::UNSIGNED_BYTE,
+        Some(transparent_atlas.texture.as_slice()),
+    );
+    gl.tex_parameter_i32(
+        glow::TEXTURE_2D,
+        glow::TEXTURE_MIN_FILTER,
+        glow::NEAREST as i32,
+    );
+    gl.tex_parameter_i32(
+        glow::TEXTURE_2D,
+        glow::TEXTURE_MAG_FILTER,
+        glow::NEAREST as i32,
+    );
+    gl.bind_texture(glow::TEXTURE_2D, None);
+    //
+    let clear_colors = [[0.1, 0.2, 0.3], [0., 0., 0.]];
+
+    let mut state = GameState {
+        gl: &gl,
+        window,
+        mouse,
+        position: glm::vec3(5.2, 3.3, 0.),
+        rotation: glm::vec2(-1.57, -1.),
+        wasd: glm::ivec3(0, 0, 0),
+        light_power: 50.0,
+        light_intensity: glm::ivec3(1, 1, 1),
+        cc_type: 0,
+        cc_types: clear_colors.len() as u32,
+        captured: true,
+        fullscreen: false,
+        running: true,
+        fast: false,
+        culling: true,
+        draw_calls: 0,
+        draw_depth: false,
+    };
+    let mut prev_time = 0.;
+    let mut current_time;
+    let mut delta_time;
+    let mut draw_calls: u32;
+    let _light_position = glm::vec3(4., 3., 3.);
+
+    let default_material = Material {
+        name: "<DEFAULT_MATERIAL>".to_string(),
+        ambient: [1., 1., 1.],
+        diffuse: [1., 1., 1.],
+        specular: [0.5, 0.5, 0.5],
+        dissolve: 0.5,
+        ambient_texture: None,
+        diffuse_texture: None,
+        specular_texture: None,
+        dissolve_texture: None,
+        normal_texture: None,
+        illumination_model: 0,
+        is_transparent: false, // unused here
+        optical_density: 1.45,
+        shininess: 200.,
+        shininess_texture: None,
+    };
+
+    'render: loop {
+        #[allow(unused_assignments, unused)]
+        {
+            current_time = start.elapsed().unwrap().as_secs_f32();
+            delta_time = current_time - prev_time;
+            prev_time = current_time;
+            // let fps = (1. / delta_time) as u32;
+            // let ms = (delta_time * 1000.).floor() as u32;
+            // println!("{:?} FPS | {:?}ms", fps, ms);
+        }
+
+        let (z_near, z_far) = (0.1, 100.0);
+        let ComputedMatrices {
+            view: view_mat,
+            projection: proj_mat,
+            right,
+            front,
+        } = compute_matrices(
+            state.position,
+            state.rotation,
+            fov,
+            aspect_ratio,
+            z_near,
+            z_far,
+        );
+        let vp_mat = proj_mat * view_mat;
+        draw_calls = 0;
+
+        // render
+        // solid
+        {
+            if state.culling {
+                gl.enable(glow::CULL_FACE);
+            }
+            gl.enable(glow::DEPTH_TEST);
+            gl.depth_func(glow::LESS);
+            gl.depth_mask(true);
+            gl.disable(glow::BLEND);
+            let cc = clear_colors[state.cc_type as usize];
+            gl.clear_color(cc[0], cc[1], cc[2], 0.);
+            // bind opaque buffer
+            gl.bind_framebuffer(glow::FRAMEBUFFER, Some(opaque_fbo));
+            gl.clear(glow::COLOR_BUFFER_BIT | glow::DEPTH_BUFFER_BIT);
+
+            gl.use_program(Some(shaders.solid));
+            gl.uniform_1_f32(solid_u.near.as_ref(), z_near);
+            gl.uniform_1_f32(solid_u.far.as_ref(), z_far);
+
+            let mut prev_mid = None;
+            for i in &models.opaque {
+                let Some(mtxs) = model_transforms.get(i) else { continue };
+                let i = *i;
+                let mid = models.material_ids[i];
+                if (mid != prev_mid) || (i == 0) {
+                    prev_mid = mid;
+                    let mat = mid.map(|mid| &materials[mid]).unwrap_or(&default_material);
+                    gl.uniform_3_f32_slice(solid_u.ambient_color.as_ref(), &mat.ambient);
+                    gl.uniform_3_f32_slice(solid_u.diffuse_color.as_ref(), &mat.diffuse);
+                    gl.uniform_3_f32_slice(solid_u.specular_color.as_ref(), &mat.specular);
+                }
+                gl.active_texture(glow::TEXTURE1);
+                gl.bind_texture(glow::TEXTURE_2D, Some(main_atlas_tx));
+                gl.uniform_1_i32(solid_u.diffuse_texture.as_ref(), 1);
+                gl.uniform_3_i32(
+                    solid_u.opts.as_ref(),
+                    if state.draw_depth { 1 } else { 0 },
+                    0,
+                    0,
+                );
+                for &mtx in mtxs {
+                    gl.uniform_matrix_4_f32_slice(
+                        solid_u.mvp.as_ref(),
+                        false,
+                        &memcast::mat4_as_array(vp_mat * mtx),
+                    );
+                    gl.bind_vertex_array(Some(main_vao));
+                    gl.bind_buffer(glow::ELEMENT_ARRAY_BUFFER, Some(main_elements));
+                    gl.draw_elements(
+                        glow::TRIANGLES,
+                        models.counts[i] as i32,
+                        glow::UNSIGNED_INT,
+                        models.offsets[i] as i32 * std::mem::size_of::<u32>() as i32,
+                    );
+                    draw_calls += 1;
+                }
+            }
+        }
+        // transparent
+        {
+            gl.disable(glow::CULL_FACE);
+            gl.depth_mask(false);
+            gl.enable(glow::BLEND);
+            gl.blend_func_draw_buffer(0, glow::ONE, glow::ONE);
+            gl.blend_func_draw_buffer(1, glow::ZERO, glow::ONE_MINUS_SRC_COLOR);
+            gl.blend_equation(glow::FUNC_ADD);
+
+            gl.bind_framebuffer(glow::FRAMEBUFFER, Some(transparent_fbo));
+            gl.clear_buffer_f32_slice(glow::COLOR, 0, &[0., 0., 0., 0.]);
+            gl.clear_buffer_f32_slice(glow::COLOR, 1, &[1., 1., 1., 1.]);
+
+            gl.use_program(Some(shaders.transparent));
+            gl.uniform_1_f32(transparent_u.near.as_ref(), z_near);
+            gl.uniform_1_f32(transparent_u.far.as_ref(), z_far);
+
+            let mut prev_mid = None;
+            for i in &models.transparent {
+                let Some(mtxs) = model_transforms.get(i) else { continue };
+                let i = *i;
+                let mid = models.material_ids[i];
+                if (mid != prev_mid) || (i == 0) {
+                    prev_mid = mid;
+                    let mat = mid.map(|mid| &materials[mid]).unwrap_or(&default_material);
+                    gl.uniform_3_f32_slice(transparent_u.ambient_color.as_ref(), &mat.ambient);
+                    gl.uniform_3_f32_slice(transparent_u.diffuse_color.as_ref(), &mat.diffuse);
+                    gl.uniform_3_f32_slice(transparent_u.specular_color.as_ref(), &mat.specular);
+                    gl.uniform_1_f32(transparent_u.dissolve.as_ref(), mat.dissolve);
+                    let o_ambient = mat.ambient_texture.is_some() as i32;
+                    let o_diffuse = mat.diffuse_texture.is_some() as i32;
+                    let o_specular = mat.specular_texture.is_some() as i32;
+                    gl.uniform_3_i32(
+                        transparent_u.opts.as_ref(),
+                        o_ambient,
+                        o_diffuse,
+                        o_specular,
+                    );
+                }
+                gl.active_texture(glow::TEXTURE1);
+                gl.bind_texture(glow::TEXTURE_2D, Some(main_tatlas_tx));
+                gl.uniform_1_i32(transparent_u.diffuse_texture.as_ref(), 1);
+
+                for &mtx in mtxs {
+                    gl.uniform_matrix_4_f32_slice(
+                        transparent_u.mvp.as_ref(),
+                        false,
+                        &memcast::mat4_as_array(vp_mat * mtx),
+                    );
+
+                    gl.bind_vertex_array(Some(main_vao));
+                    gl.bind_buffer(glow::ELEMENT_ARRAY_BUFFER, Some(main_elements));
+                    gl.draw_elements(
+                        glow::TRIANGLES,
+                        models.counts[i] as i32,
+                        glow::UNSIGNED_INT,
+                        models.offsets[i] as i32 * std::mem::size_of::<u32>() as i32,
+                    );
+                    draw_calls += 1;
+                }
+            }
+        }
+
+        // composite
+        {
+            gl.depth_func(glow::ALWAYS);
+            gl.enable(glow::BLEND);
+            gl.blend_func(glow::SRC_ALPHA, glow::ONE_MINUS_SRC_ALPHA);
+
+            gl.bind_framebuffer(glow::FRAMEBUFFER, Some(opaque_fbo));
+
+            gl.use_program(Some(shaders.composite));
+            // draw screen quad
+            gl.active_texture(glow::TEXTURE0);
+            gl.bind_texture(glow::TEXTURE_2D, Some(accum_tx));
+            gl.active_texture(glow::TEXTURE1);
+            gl.bind_texture(glow::TEXTURE_2D, Some(reveal_tx));
+            gl.bind_vertex_array(Some(screen_vao));
+            gl.draw_arrays(glow::TRIANGLES, 0, 6);
+            draw_calls += 1;
+        }
+        // backbuffer
+        {
+            gl.disable(glow::DEPTH_TEST);
+            gl.depth_mask(true); // enable depth mask to later clear depth buffer
+            gl.disable(glow::BLEND);
+
+            // unbind framebuffer == now render to screen backbuffer
+            gl.bind_framebuffer(glow::FRAMEBUFFER, None);
+            gl.clear_color(0., 0., 0., 0.);
+            gl.clear(glow::COLOR_BUFFER_BIT | glow::DEPTH_BUFFER_BIT | glow::STENCIL_BUFFER_BIT);
+
+            gl.use_program(Some(shaders.screen));
+            // draw final screen quad
+            gl.active_texture(glow::TEXTURE0);
+            gl.bind_texture(glow::TEXTURE_2D, Some(opaque_tx));
+            gl.bind_vertex_array(Some(screen_vao));
+            gl.draw_arrays(glow::TRIANGLES, 0, 6);
+            draw_calls += 1;
+        }
+
+        state.window.gl_swap_window();
+        state.draw_calls = draw_calls;
+
+        let speed_fast: f32 = 5.0;
+        let speed_slow: f32 = 2.0;
+        let speed = if state.fast { speed_fast } else { speed_slow };
+        for event in event_loop.poll_iter() {
+            use sdl2::event::{Event, WindowEvent};
+            if let Event::Window {
+                win_event: WindowEvent::SizeChanged(x, y),
+                ..
+            } = event
+            {
+                width = x as u32;
+                height = y as u32;
+                aspect_ratio = width as f32 / height as f32;
+                gl.viewport(0, 0, width as i32, height as i32);
+                for (tx, params) in [
+                    (opaque_tx, &opaque_params),
+                    (depth_tx, &depth_params),
+                    (accum_tx, &accum_params),
+                    (reveal_tx, &reveral_params),
+                ] {
+                    reset_texture(&gl, tx, params, width, height);
+                }
+                rebind_framebuffer(&gl, opaque_fbo, opaque_fbo_tx, opaque_fbo_db)?;
+                rebind_framebuffer(&gl, transparent_fbo, transparent_fbo_tx, transparent_fbo_db)?;
+            }
+            handle_event(event, &mut state);
+            if !state.running {
+                break 'render;
+            }
+        }
+        let pos_diff = front * state.wasd.x as f32
+            + right * state.wasd.z as f32
+            + VEC3_UP * state.wasd.y as f32;
+        state.position = state.position + pos_diff * delta_time * speed;
+        prev_time = current_time;
+    }
+    Ok(())
+}
 #[derive(Debug)]
 pub struct Material {
     pub name: String,
@@ -377,460 +840,6 @@ fn prepare_objs(paths: &[&std::path::Path]) -> Result<LoadedModels, String> {
     })
 }
 
-unsafe fn main0(
-    models: BakedMeshData,
-    materials: &[Material],
-    objects: &[(usize, Transform)],
-    atlas: &atlas::Atlas,
-    transparent_atlas: &atlas::Atlas,
-) -> Result<(), String> {
-    let start = std::time::SystemTime::now();
-    let (mut width, mut height): (u32, u32) = (800, 600);
-    let InitializedWindow {
-        gl,
-        sdl,
-        window,
-        mut event_loop,
-        gl_context: _gl_context, /* NOTE: should not drop */
-    } = init_window(width, height)?;
-
-    let mouse = sdl.mouse();
-    mouse.set_relative_mouse_mode(true);
-
-    // NOTE: ttf test
-    {
-        println!("SDL2 TTF: {}", sdl2::ttf::get_linked_version());
-        let ttf = sdl2::ttf::init().map_err(|e| e.to_string())?;
-        let font = ttf.load_font("./data/fonts/DejaVuSansMono.ttf", 50)?;
-        let max_width = 0;
-        let text = "Как же это\nбыло сложно";
-        let fg = sdl2::pixels::Color::RGBA(255, 255, 255, 255);
-        let bg = sdl2::pixels::Color::RGBA(127, 127, 127, 127);
-        // initial surface format is ARGB as per TTF_RenderUTF8_*
-        let pixel_format = sdl2::pixels::PixelFormatEnum::RGBA32.try_into()?;
-
-        macro_rules! render_txt {
-            ($type:ident, $($args:expr),+) => {{
-                let txt = font.render(text).$type($($args),+).unwrap().convert(&pixel_format)?;
-                let data = txt.with_lock(|x| x.to_vec());
-                image::RgbaImage::from_raw(txt.width(), txt.height(), data).unwrap().save(concat!("./cache/", stringify!($type), ".png")).unwrap();
-            }};
-        }
-
-        render_txt!(blended, fg);
-        render_txt!(blended_wrapped, fg, max_width);
-        render_txt!(solid, fg);
-        render_txt!(shaded, fg, bg);
-    }
-
-    gl.enable(glow::DEBUG_OUTPUT);
-    gl.debug_message_callback(debug_message_callback);
-
-    let mut aspect_ratio = width as f32 / height as f32;
-    let fov = glm::radians(45.);
-
-    let (shaders, solid_u, transparent_u) = init_shaders(&gl).unwrap();
-    let main_vao = gl.create_vertex_array()?;
-    let main_vertices = gl.create_buffer()?;
-    let main_uvs = gl.create_buffer()?;
-    let main_normals = gl.create_buffer()?;
-    let main_elements = gl.create_buffer()?;
-    init_main_vao(
-        &gl,
-        main_vao,
-        main_vertices,
-        main_uvs,
-        main_normals,
-        main_elements,
-        &models,
-    );
-
-    let screen_vao = gl.create_vertex_array()?;
-    let screen_vbo = gl.create_buffer()?;
-    init_screen_vao(&gl, screen_vao, screen_vbo);
-    // set up framebuffers and their texture attachments
-    let opaque_fbo = gl.create_framebuffer()?;
-    let transparent_fbo = gl.create_framebuffer()?;
-    // attachments opaque
-    let opaque_tx = gl.create_texture()?;
-    let opaque_params = TextureParams {
-        internal_format: glow::RGBA16F,
-        format: glow::RGBA,
-        data_type: glow::HALF_FLOAT,
-        min_filter: Some(glow::LINEAR),
-        mag_filter: Some(glow::LINEAR),
-    };
-    reset_texture(&gl, opaque_tx, &opaque_params, width, height);
-    let depth_tx = gl.create_texture()?;
-    let depth_params = TextureParams {
-        internal_format: glow::DEPTH_COMPONENT,
-        format: glow::DEPTH_COMPONENT,
-        data_type: glow::FLOAT,
-        min_filter: None,
-        mag_filter: None,
-    };
-    reset_texture(&gl, depth_tx, &depth_params, width, height);
-    let opaque_fbo_tx = &[
-        (glow::COLOR_ATTACHMENT0, opaque_tx),
-        (glow::DEPTH_ATTACHMENT, depth_tx),
-    ];
-    let opaque_fbo_db = None;
-    rebind_framebuffer(&gl, opaque_fbo, opaque_fbo_tx, opaque_fbo_db)?;
-    // attachments transparent
-    let accum_tx = gl.create_texture()?;
-    let accum_params = TextureParams {
-        internal_format: glow::RGBA16F,
-        format: glow::RGBA,
-        data_type: glow::HALF_FLOAT,
-        min_filter: Some(glow::LINEAR),
-        mag_filter: Some(glow::LINEAR),
-    };
-    reset_texture(&gl, accum_tx, &accum_params, width, height);
-    let reveal_tx = gl.create_texture()?;
-    let reveral_params = TextureParams {
-        internal_format: glow::R8,
-        format: glow::RED,
-        data_type: glow::FLOAT,
-        min_filter: Some(glow::LINEAR),
-        mag_filter: Some(glow::LINEAR),
-    };
-    reset_texture(&gl, reveal_tx, &reveral_params, width, height);
-    let transparent_fbo_tx: &[(GLTextureAttachment, glow::Texture)] = &[
-        (glow::COLOR_ATTACHMENT0, accum_tx),
-        (glow::COLOR_ATTACHMENT1, reveal_tx),
-        (glow::DEPTH_ATTACHMENT, depth_tx),
-    ];
-    let transparent_fbo_db =
-        Some::<&[GLDrawBuffer]>(&[glow::COLOR_ATTACHMENT0, glow::COLOR_ATTACHMENT1]);
-    rebind_framebuffer(&gl, transparent_fbo, transparent_fbo_tx, transparent_fbo_db)?;
-    // transform matrices
-    use std::collections::hash_map::Entry;
-    use std::collections::HashMap;
-    let mut model_transforms: HashMap<usize, Vec<_>> = HashMap::new();
-    for (i, transform) in objects {
-        match model_transforms.entry(*i) {
-            Entry::Occupied(mut e) => e.get_mut().push(model_mat_from(*transform)),
-            Entry::Vacant(e) => {
-                e.insert(vec![model_mat_from(*transform)]);
-            },
-        }
-    }
-    let main_atlas_tx = gl.create_texture()?;
-    gl.bind_texture(glow::TEXTURE_2D, Some(main_atlas_tx));
-    // TODO hardcode
-    gl.tex_image_2d(
-        glow::TEXTURE_2D,
-        0,
-        glow::RGB as i32,
-        128,
-        128,
-        0,
-        glow::RGB,
-        glow::UNSIGNED_BYTE,
-        Some(atlas.texture.as_slice()),
-    );
-    gl.tex_parameter_i32(
-        glow::TEXTURE_2D,
-        glow::TEXTURE_MIN_FILTER,
-        glow::NEAREST as i32,
-    );
-    gl.tex_parameter_i32(
-        glow::TEXTURE_2D,
-        glow::TEXTURE_MAG_FILTER,
-        glow::NEAREST as i32,
-    );
-    // gl.bind_texture(glow::TEXTURE_2D, None);
-    let main_tatlas_tx = gl.create_texture()?;
-    gl.bind_texture(glow::TEXTURE_2D, Some(main_tatlas_tx));
-    gl.tex_image_2d(
-        glow::TEXTURE_2D,
-        0,
-        glow::RGBA as i32,
-        128,
-        128,
-        0,
-        glow::RGBA,
-        glow::UNSIGNED_BYTE,
-        Some(transparent_atlas.texture.as_slice()),
-    );
-    gl.tex_parameter_i32(
-        glow::TEXTURE_2D,
-        glow::TEXTURE_MIN_FILTER,
-        glow::NEAREST as i32,
-    );
-    gl.tex_parameter_i32(
-        glow::TEXTURE_2D,
-        glow::TEXTURE_MAG_FILTER,
-        glow::NEAREST as i32,
-    );
-    gl.bind_texture(glow::TEXTURE_2D, None);
-    //
-    let clear_colors = [[0.1, 0.2, 0.3], [0., 0., 0.]];
-
-    let mut state = GameState {
-        gl: &gl,
-        window,
-        mouse,
-        position: glm::vec3(5.2, 3.3, 0.),
-        rotation: glm::vec2(-1.57, -1.),
-        wasd: glm::ivec3(0, 0, 0),
-        light_power: 50.0,
-        light_intensity: glm::ivec3(1, 1, 1),
-        cc_type: 0,
-        cc_types: clear_colors.len() as u32,
-        captured: true,
-        fullscreen: false,
-        running: true,
-        fast: false,
-        culling: true,
-        draw_calls: 0,
-        draw_depth: false,
-    };
-    let mut prev_time = 0.;
-    let mut current_time;
-    let mut delta_time;
-    let mut draw_calls: u32;
-    let _light_position = glm::vec3(4., 3., 3.);
-
-    let default_material = Material {
-        name: "<DEFAULT_MATERIAL>".to_string(),
-        ambient: [1., 1., 1.],
-        diffuse: [1., 1., 1.],
-        specular: [0.5, 0.5, 0.5],
-        dissolve: 0.5,
-        ambient_texture: None,
-        diffuse_texture: None,
-        specular_texture: None,
-        dissolve_texture: None,
-        normal_texture: None,
-        illumination_model: 0,
-        is_transparent: false, // unused here
-        optical_density: 1.45,
-        shininess: 200.,
-        shininess_texture: None,
-    };
-
-    'render: loop {
-        #[allow(unused_assignments, unused)]
-        {
-            current_time = start.elapsed().unwrap().as_secs_f32();
-            delta_time = current_time - prev_time;
-            prev_time = current_time;
-            let fps = (1. / delta_time) as u32;
-            let ms = (delta_time * 1000.).floor() as u32;
-            // println!("{:?} FPS | {:?}ms", fps, ms);
-        }
-
-        let (z_near, z_far) = (0.1, 100.0);
-        let ComputedMatrices {
-            view: view_mat,
-            projection: proj_mat,
-            right,
-            front,
-        } = compute_matrices(
-            state.position,
-            state.rotation,
-            fov,
-            aspect_ratio,
-            z_near,
-            z_far,
-        );
-        let vp_mat = proj_mat * view_mat;
-        draw_calls = 0;
-
-        // render
-        // solid
-        {
-            if state.culling {
-                gl.enable(glow::CULL_FACE);
-            }
-            gl.enable(glow::DEPTH_TEST);
-            gl.depth_func(glow::LESS);
-            gl.depth_mask(true);
-            gl.disable(glow::BLEND);
-            let cc = clear_colors[state.cc_type as usize];
-            gl.clear_color(cc[0], cc[1], cc[2], 0.);
-            // bind opaque buffer
-            gl.bind_framebuffer(glow::FRAMEBUFFER, Some(opaque_fbo));
-            gl.clear(glow::COLOR_BUFFER_BIT | glow::DEPTH_BUFFER_BIT);
-
-            gl.use_program(Some(shaders.solid));
-
-            let mut prev_mid = None;
-            for i in &models.opaque {
-                let Some(mtxs) = model_transforms.get(i) else { continue };
-                let i = *i;
-                let mid = models.material_ids[i];
-                if (mid != prev_mid) || (i == 0) {
-                    prev_mid = mid;
-                    let mat = mid.map(|mid| &materials[mid]).unwrap_or(&default_material);
-                    gl.uniform_3_f32_slice(solid_u.ambient_color.as_ref(), &mat.ambient);
-                    gl.uniform_3_f32_slice(solid_u.diffuse_color.as_ref(), &mat.diffuse);
-                    gl.uniform_3_f32_slice(solid_u.specular_color.as_ref(), &mat.specular);
-                }
-                gl.active_texture(glow::TEXTURE1);
-                gl.bind_texture(glow::TEXTURE_2D, Some(main_atlas_tx));
-                gl.uniform_1_i32(solid_u.diffuse_texture.as_ref(), 1);
-                gl.uniform_3_i32(solid_u.opts.as_ref(), 0, 1, 0);
-                for &mtx in mtxs {
-                    gl.uniform_matrix_4_f32_slice(
-                        solid_u.mvp.as_ref(),
-                        false,
-                        &memcast::mat4_as_array(vp_mat * mtx),
-                    );
-                    gl.bind_vertex_array(Some(main_vao));
-                    gl.bind_buffer(glow::ELEMENT_ARRAY_BUFFER, Some(main_elements));
-                    gl.draw_elements(
-                        glow::TRIANGLES,
-                        models.counts[i] as i32,
-                        glow::UNSIGNED_INT,
-                        models.offsets[i] as i32 * std::mem::size_of::<u32>() as i32,
-                    );
-                    draw_calls += 1;
-                }
-            }
-        }
-        // transparent
-        {
-            gl.disable(glow::CULL_FACE);
-            gl.depth_mask(false);
-            gl.enable(glow::BLEND);
-            gl.blend_func_draw_buffer(0, glow::ONE, glow::ONE);
-            gl.blend_func_draw_buffer(1, glow::ZERO, glow::ONE_MINUS_SRC_COLOR);
-            gl.blend_equation(glow::FUNC_ADD);
-
-            gl.bind_framebuffer(glow::FRAMEBUFFER, Some(transparent_fbo));
-            gl.clear_buffer_f32_slice(glow::COLOR, 0, &[0., 0., 0., 0.]);
-            gl.clear_buffer_f32_slice(glow::COLOR, 1, &[1., 1., 1., 1.]);
-
-            gl.use_program(Some(shaders.transparent));
-
-            let mut prev_mid = None;
-            for i in &models.transparent {
-                let Some(mtxs) = model_transforms.get(i) else { continue };
-                let i = *i;
-                let mid = models.material_ids[i];
-                if (mid != prev_mid) || (i == 0) {
-                    prev_mid = mid;
-                    let mat = mid.map(|mid| &materials[mid]).unwrap_or(&default_material);
-                    gl.uniform_3_f32_slice(transparent_u.ambient_color.as_ref(), &mat.ambient);
-                    gl.uniform_3_f32_slice(transparent_u.diffuse_color.as_ref(), &mat.diffuse);
-                    gl.uniform_3_f32_slice(transparent_u.specular_color.as_ref(), &mat.specular);
-                    gl.uniform_1_f32(transparent_u.dissolve.as_ref(), mat.dissolve);
-                    let o_ambient = mat.ambient_texture.is_some() as i32;
-                    let o_diffuse = mat.diffuse_texture.is_some() as i32;
-                    let o_specular = mat.specular_texture.is_some() as i32;
-                    gl.uniform_3_i32(
-                        transparent_u.opts.as_ref(),
-                        o_ambient,
-                        o_diffuse,
-                        o_specular,
-                    );
-                }
-                gl.active_texture(glow::TEXTURE1);
-                gl.bind_texture(glow::TEXTURE_2D, Some(main_tatlas_tx));
-                gl.uniform_1_i32(transparent_u.diffuse_texture.as_ref(), 1);
-
-                for &mtx in mtxs {
-                    gl.uniform_matrix_4_f32_slice(
-                        transparent_u.mvp.as_ref(),
-                        false,
-                        &memcast::mat4_as_array(vp_mat * mtx),
-                    );
-
-                    gl.bind_vertex_array(Some(main_vao));
-                    gl.bind_buffer(glow::ELEMENT_ARRAY_BUFFER, Some(main_elements));
-                    gl.draw_elements(
-                        glow::TRIANGLES,
-                        models.counts[i] as i32,
-                        glow::UNSIGNED_INT,
-                        models.offsets[i] as i32 * std::mem::size_of::<u32>() as i32,
-                    );
-                    draw_calls += 1;
-                }
-            }
-        }
-
-        // composite
-        {
-            gl.depth_func(glow::ALWAYS);
-            gl.enable(glow::BLEND);
-            gl.blend_func(glow::SRC_ALPHA, glow::ONE_MINUS_SRC_ALPHA);
-
-            gl.bind_framebuffer(glow::FRAMEBUFFER, Some(opaque_fbo));
-
-            gl.use_program(Some(shaders.composite));
-            // draw screen quad
-            gl.active_texture(glow::TEXTURE0);
-            gl.bind_texture(glow::TEXTURE_2D, Some(accum_tx));
-            gl.active_texture(glow::TEXTURE1);
-            gl.bind_texture(glow::TEXTURE_2D, Some(reveal_tx));
-            gl.bind_vertex_array(Some(screen_vao));
-            gl.draw_arrays(glow::TRIANGLES, 0, 6);
-            draw_calls += 1;
-        }
-        // backbuffer
-        {
-            gl.disable(glow::DEPTH_TEST);
-            gl.depth_mask(true); // enable depth mask to later clear depth buffer
-            gl.disable(glow::BLEND);
-
-            // unbind framebuffer == now render to screen backbuffer
-            gl.bind_framebuffer(glow::FRAMEBUFFER, None);
-            gl.clear_color(0., 0., 0., 0.);
-            gl.clear(glow::COLOR_BUFFER_BIT | glow::DEPTH_BUFFER_BIT | glow::STENCIL_BUFFER_BIT);
-
-            gl.use_program(Some(shaders.screen));
-            // draw final screen quad
-            gl.active_texture(glow::TEXTURE0);
-            gl.bind_texture(glow::TEXTURE_2D, Some(opaque_tx));
-            gl.bind_vertex_array(Some(screen_vao));
-            gl.draw_arrays(glow::TRIANGLES, 0, 6);
-            draw_calls += 1;
-        }
-
-        state.window.gl_swap_window();
-        state.draw_calls = draw_calls;
-
-        let speed_fast: f32 = 5.0;
-        let speed_slow: f32 = 2.0;
-        let speed = if state.fast { speed_fast } else { speed_slow };
-        for event in event_loop.poll_iter() {
-            use sdl2::event::{Event, WindowEvent};
-            if let Event::Window {
-                win_event: WindowEvent::SizeChanged(x, y),
-                ..
-            } = event
-            {
-                width = x as u32;
-                height = y as u32;
-                aspect_ratio = width as f32 / height as f32;
-                gl.viewport(0, 0, width as i32, height as i32);
-                for (tx, params) in [
-                    (opaque_tx, &opaque_params),
-                    (depth_tx, &depth_params),
-                    (accum_tx, &accum_params),
-                    (reveal_tx, &reveral_params),
-                ] {
-                    reset_texture(&gl, tx, params, width, height);
-                }
-                rebind_framebuffer(&gl, opaque_fbo, opaque_fbo_tx, opaque_fbo_db)?;
-                rebind_framebuffer(&gl, transparent_fbo, transparent_fbo_tx, transparent_fbo_db)?;
-            }
-            handle_event(event, &mut state);
-            if !state.running {
-                break 'render;
-            }
-        }
-        let pos_diff = front * state.wasd.x as f32
-            + right * state.wasd.z as f32
-            + VEC3_UP * state.wasd.y as f32;
-        state.position = state.position + pos_diff * delta_time * speed;
-        prev_time = current_time;
-    }
-    Ok(())
-}
-
 struct GameState<'a> {
     #[allow(unused)]
     gl: &'a glow::Context,
@@ -855,88 +864,6 @@ struct GameState<'a> {
 fn debug_message_callback(_source: u32, _typ: u32, id: u32, _severity: u32, message: &str) {
     eprintln!("GL error {:0x}: {}", id, message);
 }
-
-/*
- let mut textures = load_textures(&gl, &materials);
-    if false {
-        let text_material_id = materials
-            .iter()
-            .enumerate()
-            .find(|(_, mtl)| mtl.name == "Text_material")
-            .unwrap()
-            .0;
-        // NOTE: render sample text
-        let fonts = &[fontdue::Font::from_bytes(
-            std::fs::read("./data/fonts/DejaVuSansMono.ttf").unwrap(),
-            fontdue::FontSettings::default(),
-        )
-        .unwrap()];
-        let (text_texture, w, h) = {
-            // NOTE rgb = 3, rgba = 4, grayscale = 1
-            let pixel_width = 3;
-            use fontdue::layout::{CoordinateSystem, GlyphRasterConfig, Layout, TextStyle};
-            let mut ly = Layout::new(CoordinateSystem::PositiveYDown);
-            ly.append(fonts, &TextStyle::new("Test", 72.0, 0));
-            ly.append(fonts, &TextStyle::new("\nsmaller\nlines\n", 40.0, 0));
-            ly.append(fonts, &TextStyle::new("Русский", 40.0, 0));
-            let (w0, h0) = {
-                // TODO: h = ly.height(); w = /*compute width*/;
-                let (mut x1, mut x2): (i32, i32) = (0, 0);
-                for g in ly.glyphs() {
-                    x1 = x1.min(g.x as i32);
-                    x2 = x2.max(g.x as i32 + g.width as i32);
-                }
-                (1 + (x2 - x1) as usize, ly.height() as usize) // idk why 1+dx
-            };
-
-            let (w, h) = (
-                w0.next_power_of_two().max(256),
-                h0.next_power_of_two().max(256),
-            );
-            println!("{}x{} -> {}x{}", w0, h0, w, h);
-            let mut res = vec![0; pixel_width * w * h];
-            for g in ly.glyphs() {
-                if g.width == 0 {
-                    continue;
-                }
-                let GlyphRasterConfig {
-                    glyph_index: g_index,
-                    px: g_px,
-                    ..
-                } = g.key;
-                let bmp = fonts[g.font_index].rasterize_indexed(g_index, g_px).1;
-                let start = pixel_width * (g.y as usize * w + g.x as usize);
-                for (i, row) in bmp.chunks(g.width).enumerate() {
-                    for (j, &px) in row.iter().enumerate() {
-                        let offset = start + pixel_width * (i * w + j);
-                        // NOTE
-                        // for i in 0..pixel_width {res[offset+i] = px;}
-                        res[offset] = px;
-                        res[offset + 1] = px;
-                        res[offset + 2] = px;
-                    }
-                }
-            }
-            (res, w, h)
-        };
-        // TODO: adjust uvs for text plane(s)
-        let ttx = gl
-            .create_texture(GLTextureTarget::Texture2D, GLColor::Rgba)
-            .unwrap();
-        ttx.bind();
-        ttx.write(
-            0,
-            w as u32,
-            h as u32,
-            GLColor::Rgb,
-            GLType::UnsignedByte,
-            &text_texture,
-        );
-        ttx.mag_filter(GLTextureMagFilter::Nearest);
-        ttx.min_filter(GLTextureMinFilter::Nearest);
-        textures.insert(text_material_id, ttx);
-    }
-:*/
 
 fn handle_event(event: sdl2::event::Event, state: &mut GameState) {
     use sdl2::event::Event;
@@ -1000,7 +927,7 @@ fn handle_event(event: sdl2::event::Event, state: &mut GameState) {
                 println!("Light A{} D{} S{}", x, y, z);
             }
             println!("Draw depth: {}", state.draw_depth);
-            println!("CUlling: {}", state.culling);
+            println!("Culling: {}", state.culling);
             println!("Draw calls: {}", state.draw_calls);
         },
 
